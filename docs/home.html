@@ -16,7 +16,7 @@
         <div class='row' id='navigation-bar'>
             <div class='col-3'>
                 <div class='container-fluid'>
-                    <a class="navbar-brand" href="my-groups.html">
+                    <a class="navbar-brand" href="index.html">
                         <img src="./logo.png" alt="" width="30" height="24" class="d-inline-block align-text-top" id='brand-txt'>
                         Milestone1
                     </a>
@@ -25,13 +25,52 @@
             <div class='col-9'>
                 <ul class="nav justify-content-center">
                     <li class="nav-item">
-                        <button type="button" class="btn btn-outline-light" href="my-groups.html">My Groups</button>
+                        <button type="button" class="btn btn-outline-light">My Groups</button>
                     </li>
                     <li class="nav-item">
-                        <button type="button" class="btn btn-outline-light">Add Group</button>
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#addGroup">Add Group</button>
+
+                        <!-- Add Group Modal -->
+                        <div class="modal fade" id="addGroup" >
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                    hi
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                        <button type="button" class="btn btn-primary">Save changes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </li>
+
                     <li class="nav-item">
-                        <button type="button" class="btn btn-outline-danger">Delete</button>
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete">Delete</button>
+
+                        <!-- Delete Modal -->
+                        <div class="modal fade" id="delete" >
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="exampleModalLabel">Delete either:</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body" id = "delete-buttons">
+                                        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Class</button>
+                                        OR
+                                        <button type="button" class="btn btn-primary">Group</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </li>
                 </ul>
             </div>
