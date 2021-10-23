@@ -39,3 +39,17 @@
     margin-bottom: 10px;
 }
 
+#category{
+    text-align: left;
+    font-size: 25px;
+    white-space: pre;
+    color: blue;
+}
+
+#group-info{
+    white-space:pre;
+}
+
+#collapseOne{
+    text-align: left;
+}
