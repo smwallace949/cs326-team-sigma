@@ -1,0 +1,100 @@
+/*Navigation Bar*/
+#navigation-bar {
+    background-color: #212529;
+    padding-top: 10px;
+    height: 60px;
+}
+.container-fluid {
+    padding-top: 9px;
+}
+.navbar-brand {
+    color: white;
+}
+.nav-item {
+    margin-left: 5%;
+    margin-right: 5%;
+}
+#logout-btn {
+    color:white;
+}
+
+/*My classes left column*/
+#classes-groups {
+    word-wrap: break-word;
+}
+#my-classes {
+    background-color: #e5e5e5;
+    padding-left: 3%;
+}
+#add-class-button {
+    margin-top: 8px;
+    margin-bottom: 10px;
+    padding-right: 30px;
+    padding-left: 30px;
+    font-size: 18px;
+}
+.class-buttons {
+    margin-top: 8px;
+    margin-bottom: 10px;
+    font-size: 18px;
+}
+.btn-block {
+    width: 80%;
+    margin-bottom: 10px;
+}
+
+.modal-row {
+    margin-top: 12px;
+}
+
+
+/*Content Page: Accordion*/
+.cat-header {
+    text-align: center;
+    font-size: 22px;
+    word-wrap: break-word;
+    color: white; 
+}
+.header-row {
+    margin-top: 0px;
+    padding-right: 30px;
+    padding-left: 5px;
+}
+
+#category {
+    background-color: #0d6efd;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.head-col {
+    padding-left: 0px;
+}
+
+.accordion-item {
+    padding-top: 1px;
+    padding-left: 1px;
+}
+
+.group-attr{
+    text-align: center;
+}
+
+#collapseOne{
+    text-align: left;
+}
+
+.delete-buttons{
+    margin-bottom: 10px;
+}
+.btn-join {
+    margin-top: 10px;
+    justify-content: center;
+    width: 80%;
+}
+
+/*Filter Bar*/
+.filter-bar {
+    background-color: #f9eec7;
+    padding-top: 15px;
+}
