@@ -96,3 +96,9 @@ Below are all of the frames with their respectiv wireframes and html implementat
 **Delete Group/Class Modal (HTML)**
 
 ![Wireframe](deletehtml.png)
+
+
+**Breakdown of Work**
+-Alan Castillo: Implemented Modals and top bar/side bar functionality.
+-Elisavet Philippakis: Implemented list entries and all child components.
+-Sam Wallace: Created authentication pages, wrote documentation (this file), organized repository.
