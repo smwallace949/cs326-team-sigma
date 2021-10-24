@@ -37,7 +37,7 @@
                             <div class="modal-dialog">
                               <div class="modal-content">
                                 <div class="modal-header">
-                                  <h5 class="modal-title" id="exampleModalLabel">Create a Group</h5>
+                                  <h5 class="modal-title">Create a Group</h5>
                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body" id='add-group-modal-body'>
@@ -59,39 +59,39 @@
                                     </div>
                                     <div class="row modal-row">
                                         <div class="input-group mb-3">
-                                            <span class="input-group-text" id="basic-addon3">Max Size: </span>
-                                            <input type="text" class="form-control" id="max-size-txt" aria-describedby="basic-addon3">
+                                            <span class="input-group-text">Max Size: </span>
+                                            <input type="text" class="form-control" id="max-size-txt" >
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="input-group mb-3">
-                                            <span class="input-group-text" id="basic-addon3">Name: </span>
-                                            <input type="text" class="form-control" id="group-name" aria-describedby="basic-addon3">
+                                            <span class="input-group-text">Name: </span>
+                                            <input type="text" class="form-control" id="group-name" >
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col">
                                             <div class="form-check">
                                                 <input class="form-check-input availability" type="checkbox" value="Mon">
-                                                <label class="form-check-label" for="flexCheckDefault">
+                                                <label class="form-check-label">
                                                   Monday
                                                 </label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input availability" type="checkbox" value="Teus">
-                                                <label class="form-check-label" for="flexCheckDefault">
+                                                <label class="form-check-label">
                                                   Teusday
                                                 </label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input availability" type="checkbox" value="Wed">
-                                                <label class="form-check-label" for="flexCheckDefault">
+                                                <label class="form-check-label">
                                                   Wednesday
                                                 </label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input availability" type="checkbox" value="Thurs">
-                                                <label class="form-check-label" for="flexCheckDefault">
+                                                <label class="form-check-label">
                                                   Thursday
                                                 </label>
                                             </div>
@@ -99,25 +99,25 @@
                                         <div class="col">
                                             <div class="form-check">
                                                 <input class="form-check-input availability" type="checkbox" value="Fri">
-                                                <label class="form-check-label" for="flexCheckDefault">
+                                                <label class="form-check-label">
                                                   Friday
                                                 </label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input availability" type="checkbox" value="Sat">
-                                                <label class="form-check-label" for="flexCheckDefault">
+                                                <label class="form-check-label">
                                                   Saturday
                                                 </label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input availability" type="checkbox" value="Sun">
-                                                <label class="form-check-label" for="flexCheckDefault">
+                                                <label class="form-check-label">
                                                   Sunday
                                                 </label>
                                             </div>
                                             <div class="form-check">
                                                 <input class="form-check-input availability" type="checkbox" value="Anytime">
-                                                <label class="form-check-label" for="flexCheckDefault">
+                                                <label class="form-check-label">
                                                   Anytime
                                                 </label>
                                             </div>
@@ -142,12 +142,12 @@
                             <div class="modal-dialog">
                                 <div class="modal-content">
                                     <div class="modal-header">
-                                        <h5 class="modal-title" id="exampleModalLabel">Delete either:</h5>
+                                        <h5 class="modal-title">Delete either:</h5>
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
                                         <div class="col dropdown">
-                                            <select class="form-select" id='class-dropdown' aria-label="Default select example">
+                                            <select class="form-select" id='delete-dropdown' aria-label="Default select example">
                                                 <option value="class">Class</option>
                                                 <option value="class">CS326</option>
                                                 <option value="class">CS345</option>
@@ -169,9 +169,10 @@
                                         <div class="modal-footer">
                                             <!-- SAVE CHANGES Button-->
                                               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                              <button type="button" class="btn btn-primary" id='saveAddedGroup'>Save Group</button>
+                                              <button type="button" class="btn btn-primary" id='delete-save'>Save Changes</button>
                                         </div>                                                      
                                     </div>
+                                </div>    
                             </div>
                         </div>
                     </li> 
@@ -194,7 +195,7 @@
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title" id="exampleModalLabel">Select Class:</h5>
+                                <h5 class="modal-title">Select Class:</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
@@ -207,7 +208,7 @@
                             <div class="modal-footer">
                                 <!-- SAVE CHANGES Button-->
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-primary" id='saveAddedGroup'>Save Changes</button>
+                                <button type="button" class="btn btn-primary" id='saveClass'>Save Changes</button>
                             </div>
                         </div>
                     </div>
@@ -245,16 +246,16 @@
                 
                 <div class="accordion" id="accordionExample">
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
+                        <h2 class="accordion-header">
                         <button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                            <div class="col group-attr">Night Grinders</div>
-                            <div class="col group-attr">Tues, Thurs </div>
-                            <div class="col group-attr">Emery Berger</div>
-                            <div class="col group-attr">3</div>
-                            <div class="col group-attr">01</div>
+                            <span class="col group-attr">Night Grinders</span>
+                            <span class="col group-attr">Tues, Thurs </span>
+                            <span class="col group-attr">Emery Berger</span>
+                            <span class="col group-attr">3</span>
+                            <span class="col group-attr">01</span>
                         </button>
                         </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                             <div class="accordion-body">
                                 <div><strong>Group Members:</strong></div>
                                 <div>Elisavet Philippakis -> Email: ephilippakis@umass.edu</div>
@@ -264,16 +265,16 @@
                         </div>
                     </div>
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
+                        <h2 class="accordion-header">
                         <button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseOne">
-                            <div class="col group-attr">CodeTrek</div>
-                            <div class="col group-attr">Mon, Tues, Thurs </div>
-                            <div class="col group-attr">Emery Berger</div>
-                            <div class="col group-attr">4</div>
-                            <div class="col group-attr">02</div>
+                            <span class="col group-attr">CodeTrek</span>
+                            <span class="col group-attr">Mon, Tues, Thurs </span>
+                            <span class="col group-attr">Emery Berger</span>
+                            <span class="col group-attr">4</span>
+                            <span class="col group-attr">02</span>
                         </button>
                         </h2>
-                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                        <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                             <div class="accordion-body">
                                 <div><strong>Group Members:</strong></div>
                                 <div>Chuck Norris -> Email:</div>
@@ -284,16 +285,16 @@
                         </div>
                     </div>
                     <div class="accordion-item">
-                        <h2 class="accordion-header" id="headingOne">
+                        <h2 class="accordion-header">
                         <button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseOne">
-                            <div class="col group-attr">JavaSip</div>
-                            <div class="col group-attr">Anytime</div>
-                            <div class="col group-attr">Jaime Davila</div>
-                            <div class="col group-attr">2</div>
-                            <div class="col group-attr">03</div>
+                            <span class="col group-attr">JavaSip</span>
+                            <span class="col group-attr">Anytime</span>
+                            <span class="col group-attr">Jaime Davila</span>
+                            <span class="col group-attr">2</span>
+                            <span class="col group-attr">03</span>
                         </button>
                         </h2>
-                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#accordionExample">
+                        <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
                             <div class="accordion-body">
                                 <div><strong>Group Members:</strong></div>
                                 <div>Elisavet Philippakis -> Email:</div>
