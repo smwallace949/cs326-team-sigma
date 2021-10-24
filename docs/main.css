@@ -38,6 +38,13 @@
     width: 80%;
     margin-bottom: 10px;
 }
+.login-container{
+    width:20%;
+    height:600px;
+    left:40%;
+    top:10%;
+    background-color: #212529;
+}
 
 .modal-row {
     margin-top: 12px;

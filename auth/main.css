@@ -1,0 +1,24 @@
+body{
+    background-color: rgb(240,240,240);
+}
+
+.login-container{
+    position:relative;
+    width:20%;
+    height:auto;
+    left:40%;
+    top:50px;
+    background-color:lightgray;
+}
+
+.border-standard{
+    border-style:solid;
+    border-width:1px;
+    border-color: darkgray;
+    border-radius: 15px;
+}
+.form-margins{
+    width:90%;
+    margin: 5% 5% 5% 5%;
+}
+
