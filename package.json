@@ -1,0 +1,25 @@
+{
+  "name": "cs326-team-sigma",
+  "version": "1.0.0",
+  "dependencies": {
+    "express": "latest"
+  },
+  "description": "final project",
+  "main": "main.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://smwallace949@github.com/smwallace949/cs326-team-sigma.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/smwallace949/cs326-team-sigma/issues"
+  },
+  "homepage": "https://github.com/smwallace949/cs326-team-sigma#readme"
+}
