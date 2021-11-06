@@ -4,9 +4,7 @@
   "dependencies": {
     "express": "latest"
   },
-  "devDependencies":{
-    "express": "latest"
-  },
+  "devDependencies":{},
   "description": "final project",
   "main": "main.js",
   "directories": {
