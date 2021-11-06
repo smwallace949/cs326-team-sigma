@@ -1,3 +1,4 @@
+const url = "https://shielded-spire-81354.herokuapp.com";
 
 
 let data = {username:"smwallace", email:"sam@sam.com", name:"sam", major:"Computer Science", password:"12345"};
@@ -19,7 +20,7 @@ async function fetchDefaultReturn(url, params){
 
 async function tests(){
 
-    let newUserReq = await fetchDefaultReturn('http://localhost:3000/user/create', {
+    let newUserReq = await fetchDefaultReturn(url+'/user/create', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -29,7 +30,7 @@ async function tests(){
 
     console.log(newUserReq);
 
-    let userLoginReq = await fetchDefaultReturn('http://localhost:3000/user/read/login',{
+    let userLoginReq = await fetchDefaultReturn(url+'/user/read/login',{
         method:'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -42,12 +43,12 @@ async function tests(){
 
     console.log(userLoginReq);
 
-    let userIdReq = await fetchDefaultReturn('http://localhost:3000/user/read/id/0')
+    let userIdReq = await fetchDefaultReturn(url + '/user/read/id/0')
     .then(res=>res).catch(err => err);
 
     console.log(userIdReq);
 
-    let addGroupReq = await fetchDefaultReturn('http://localhost:3000/user/update/addGroup', {
+    let addGroupReq = await fetchDefaultReturn(url+'/user/update/addGroup', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -57,7 +58,7 @@ async function tests(){
 
     console.log(addGroupReq);
 
-    let addCourseReq = await fetchDefaultReturn('http://localhost:3000/user/update/addCourse', {
+    let addCourseReq = await fetchDefaultReturn(url + '/user/update/addCourse', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -67,7 +68,7 @@ async function tests(){
 
     console.log(addCourseReq);
 
-    let createCourseReq = await fetchDefaultReturn('http://localhost:3000/course/create', {
+    let createCourseReq = await fetchDefaultReturn(url+'/course/create', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -77,11 +78,11 @@ async function tests(){
 
     console.log(createCourseReq);
 
-    let findCourseReq = await fetchDefaultReturn('http://localhost:3000/course/read/0').then(res=>res).catch(err => err);
+    let findCourseReq = await fetchDefaultReturn(url+'/course/read/0').then(res=>res).catch(err => err);
 
     console.log(findCourseReq);
 
-    let createGroupReq = await fetchDefaultReturn('http://localhost:3000/group/create', {
+    let createGroupReq = await fetchDefaultReturn(url + '/group/create', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -91,15 +92,15 @@ async function tests(){
 
     console.log(createGroupReq);
 
-    let findGroupReq = await fetchDefaultReturn('http://localhost:3000/group/read/0').then(res=>res).catch(err => err);
+    let findGroupReq = await fetchDefaultReturn(url+'/group/read/0').then(res=>res).catch(err => err);
 
     console.log(findGroupReq);
 
-    let searchGroupReq = await fetchDefaultReturn('http://localhost:3000/group/search?course_id=0').then(res=>res).catch(err => err);
+    let searchGroupReq = await fetchDefaultReturn(url+'/group/search?course_id=0').then(res=>res).catch(err => err);
 
     console.log(searchGroupReq);
 
-    let addMemberReq = await fetchDefaultReturn('http://localhost:3000/group/update/addUser', {
+    let addMemberReq = await fetchDefaultReturn(url+'/group/update/addUser', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -109,11 +110,11 @@ async function tests(){
 
     console.log(addMemberReq);
 
-    findGroupReq = await fetchDefaultReturn('http://localhost:3000/group/read/0').then(res=>res).catch(err => err);
+    findGroupReq = await fetchDefaultReturn(url+'/group/read/0').then(res=>res).catch(err => err);
 
     console.log(findGroupReq);
 
-    let deleteGroupReq = await fetchDefaultReturn('http://localhost:3000/group/delete', {
+    let deleteGroupReq = await fetchDefaultReturn(url+'/group/delete', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -124,7 +125,7 @@ async function tests(){
     console.log(deleteGroupReq);
 
 
-    findGroupReq = await fetchDefaultReturn('http://localhost:3000/group/read/0').then(res=>res).catch(err => err);
+    findGroupReq = await fetchDefaultReturn(url+'/group/read/0').then(res=>res).catch(err => err);
 
     console.log(findGroupReq);
 

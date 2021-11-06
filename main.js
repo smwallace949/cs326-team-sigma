@@ -1,3 +1,5 @@
+const url = "https://shielded-spire-81354.herokuapp.com";
+
 let users = {
     0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: ['CS326', 'CS345']},
     1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu"},

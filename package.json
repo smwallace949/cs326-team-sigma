@@ -2,8 +2,7 @@
   "name": "cs326-team-sigma",
   "version": "1.0.0",
   "dependencies": {
-    "express": "latest",
-    "http-server": "^14.0.0"
+    "express": "latest"
   },
   "description": "final project",
   "main": "main.js",
@@ -23,5 +22,8 @@
   "bugs": {
     "url": "https://github.com/smwallace949/cs326-team-sigma/issues"
   },
-  "homepage": "https://github.com/smwallace949/cs326-team-sigma#readme"
+  "homepage": "https://github.com/smwallace949/cs326-team-sigma#readme",
+  "engines":{
+    "node":"^14.15.x"
+  }
 }
