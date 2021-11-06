@@ -21,8 +21,6 @@ app.use( '/' , express.static(path.join(__dirname ,'..', '/auth')));
 
 app.use(express.json()); // lets you handle JSON input
 
-const port = 3000;
-
 function readByID(idx, data, res){
     idx = parseInt(idx);
     console.log("Reading ID", idx);
@@ -256,6 +254,8 @@ app.get('*', (req, res) => {
   res.status(404).send('NO FOOL, BAD COMMAND');
 });
 
+const port = process.env.PORT || 3000
+
 app.listen(port, () => {
-    console.log(`Example app listening at http://localhost:${port}`);
+    console.log(`Example app listening at ${port}`);
 });
