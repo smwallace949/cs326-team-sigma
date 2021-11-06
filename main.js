@@ -1,13 +1,14 @@
+//const url = "https://shielded-spire-81354.herokuapp.com"; //for deployment
+const url  = "http://localhost:3000";//for local testing (npm start)
+
+
+
 let users = {
     0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
     1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu"},
     2: {name:'Sam Wallace', email: "swallace@umass.edu"}
 };
-/*int course_id
-string course_name
-array<string> professors
-array<int> groups
-*/
+
 let classes = {
     0: {course_name: 'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[]}, 
     1: {course_name:'CS326', professors: ['Emery Berger'], groups:[]}, 

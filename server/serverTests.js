@@ -1,4 +1,5 @@
-const url = "https://shielded-spire-81354.herokuapp.com";
+//const url = "https://shielded-spire-81354.herokuapp.com"; //for deployment
+const url  = "http://localhost:3000";//for local testing (npm start)
 
 
 let data = {username:"smwallace", email:"sam@sam.com", name:"sam", major:"Computer Science", password:"12345"};

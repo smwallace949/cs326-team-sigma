@@ -101,8 +101,7 @@ app.post('/user/read/login', (req, res) => {
 
         if(sampleUsers[id].email === req.body.email && sampleUsers[id].password === req.body.password){
             out.status = 200;
-            out.body = sampleUsers[id];
-            out.body.id = id;
+            out.body = {id: sampleUsers[id]};
             break;
         }
     }
