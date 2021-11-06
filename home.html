@@ -26,7 +26,7 @@
             <div class='col-9'>
                 <ul class="nav justify-content-center">
                     <li class="nav-item">
-                        <button type="button" class="btn btn-outline-light">My Groups</button>
+                        <button type="button" class="btn btn-outline-light" id='my-groups-btn'>My Groups</button>
                     </li>
                     <!-- Create Group Modal--> <li class="nav-item">
                         <!-- Add Group Button trigger modal -->
@@ -208,7 +208,7 @@
                             <div class="modal-footer">
                                 <!-- SAVE CHANGES Button-->
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-primary" id='saveClass'>Save Changes</button>
+                                <button type="button" class="btn btn-primary" id='save-class'>Save Changes</button>
                             </div>
                         </div>
                     </div>
@@ -223,7 +223,7 @@
             </div>
 
             <!-- Content Column -->
-            <div class='col-10 head-col'>
+            <div class='col-10 head-col' id='content-column'>
                 <!-- Content Headers --> <div class="container " id='category'>
                     <div class='row modal-row header-row'>
                         <div class="col cat-header">
@@ -244,18 +244,16 @@
                     </div>
                 </div>
                 
-                <div class="accordion" id="accordionExample">
+                <div class="accordion" id="my-groups-accordion">
                     <div class="accordion-item">
-                        <h2 class="accordion-header">
-                        <button class="accordion-button collapsed " type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
                             <span class="col group-attr">Night Grinders</span>
                             <span class="col group-attr">Tues, Thurs </span>
                             <span class="col group-attr">Emery Berger</span>
                             <span class="col group-attr">3</span>
                             <span class="col group-attr">01</span>
                         </button>
-                        </h2>
-                        <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                        <div id="collapse1" class="accordion-collapse collapse">
                             <div class="accordion-body">
                                 <div><strong>Group Members:</strong></div>
                                 <div>Elisavet Philippakis -> Email: ephilippakis@umass.edu</div>
