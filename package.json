@@ -2,7 +2,8 @@
   "name": "cs326-team-sigma",
   "version": "1.0.0",
   "dependencies": {
-    "express": "latest"
+    "express": "latest",
+    "http-server": "^14.0.0"
   },
   "description": "final project",
   "main": "main.js",
@@ -10,6 +11,7 @@
     "doc": "docs"
   },
   "scripts": {
+    "start": "cd server && node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
