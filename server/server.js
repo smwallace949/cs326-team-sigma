@@ -104,7 +104,7 @@ app.post('/user/read/login', (req, res) => {
         if(sampleUsers[id].email === req.body.email && sampleUsers[id].password === req.body.password){
             out.status = 200;
             out.body = sampleUsers[id];
-            currUser = id;
+            out.body.id = id;
             break;
         }
     }
@@ -165,6 +165,18 @@ app.get('/course/read/:course_id', (req, res) => {
     readByID(req.params.course_id, sampleCourses, res);
       
 });
+
+app.get('/course/read/all', (req, res) => {
+  
+    out = {};
+    
+    Object.keys(sampleCourses).forEach((id) => {
+        out[id] = sampleCourses[id].course_name;
+    });
+    
+    res.status(200).send(out);
+});
+
 
 
 /*
