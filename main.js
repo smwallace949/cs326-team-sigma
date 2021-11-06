@@ -4,7 +4,8 @@ let users = {
     2: {name:'Sam Wallace', email: "swallace@umass.edu", groups: [0,1,2], courses: [0,1,2,3,]}
 };
 
-let currentUser = users[0];
+let userID = 0;
+let currentUser = users[userID];
 
 let classes = {
     0: {course_name:'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[]}, 
@@ -42,7 +43,7 @@ let groups = {
 }
 //TODO: onload() get user obj from login, render user classes, and user groups.
 
-//TODO: when add class clicked, populate drop down menu
+//TODO: add-class btn click --> populate class dropdown
 document.getElementById('add-class-btn').addEventListener('click', () => {
     let classDropdown = document.getElementById('add-class-dropdown');
 
@@ -55,7 +56,7 @@ document.getElementById('add-class-btn').addEventListener('click', () => {
     }
 });
 
-//TODO: save-changes-btn for add class to user
+//TODO: add-class btn --> save changes
 document.getElementById('save-class').addEventListener('click', () => {
     let selectedCourseID = document.getElementById('add-class-dropdown').value;
     //POST /user/addCourse/
@@ -84,89 +85,106 @@ function renderClassColumn() {
 }
 
 
-//TODO: When add-group-btn clicked, render drop class drop down
+//TODO: add-group btn --> render classes dropdown in modal
 document.getElementById('addGroupButton').addEventListener('click', () => {
-    let classKey;
     let classDropdown = document.getElementById('class-dropdown');
-    for (classKey in classes) {
-        //add classkey as option to class dropdown
+    //GET class/read/all
+    for (let classKey in classes) {
         let opt = document.createElement('option');
         opt.value = classKey;
-        opt.innerHTML = classKey;
+        opt.innerHTML = classes[classKey].course_name;
         classDropdown.appendChild(opt);
     }
 });
 
-//TODO: Connected to btn above. When class picked, enable the pick teacher button and populate teachers from selected class
-let classDropdown = document.getElementById('class-dropdown');
-classDropdown.addEventListener('click', () => {
-    if (classDropdown.value !== 'class') { //if a value was selected other than the default
-        //enable and populate the teacher dropdown
-        let teacherDropdown = document.getElementById('teacher-dropdown');
+//TODO: add-group modal --> class-dropdown --> render teacher-dropdown
+document.getElementById('class-dropdown').addEventListener('click', () => {
+    let teacherDropdown = document.getElementById('teacher-dropdown');
+    let classDropdown = document.getElementById('class-dropdown');
+    if (classDropdown.value !== 'class') {
         teacherDropdown.disabled = false;
-        let i;
-        let teacherArr = classes[classDropdown.value];
-        for (i in teacherArr) {
-            let teacher = teacherArr[i];
+        //GET class/read/all
+        let teacherArr = classes[classDropdown.value].professors;
+        for (let teacher of teacherArr) {
             let opt = document.createElement('option');
             opt.value = teacher;
             opt.innerHTML = teacher;
             teacherDropdown.appendChild(opt);
         }
+    } else {
+        teacherDropdown.disabled = true;
     }
 });
 
-//TODO: When save changes clicked, add group to user data and class groups
+//TODO: add-group modal --> save changes
 document.getElementById('saveAddedGroup').addEventListener('click', () => {
     let modalBody = document.getElementById('add-group-modal-body');
     let teacherDropdown = document.getElementById('teacher-dropdown');
     if (teacherDropdown.disabled) {
-        //add alert to modal
-        let div = document.createElement('div');
-
-        div.classList.add("row");
-        div.classList.add("modal-row");
-        div.classList.add("alert");
-        div.classList.add("alert-danger");
-
-        div.setAttribute('role', 'alert');
-        div.setAttribute('id', 'save-group-error');
-        div.innerHTML = "Please pick a class first before adding a group";
-        modalBody.appendChild(div);
+        createDangerAlert(modalBody, "Please pick a class first before adding a group")
     } else {
         //TODO: Check whether size is an int and whether name is not empty string
-        let classname = document.getElementById('class-dropdown').value;
+        let class_id = document.getElementById('class-dropdown').value;
         let teacher = teacherDropdown.value;
         let size = document.getElementById('max-size-txt').value;
         let name = document.getElementById('group-name').value;
-        //get availability
-        let availability = [];
-        let days = document.getElementsByClassName('availability');
-        for (let i=0; i<days.length; i++) {
-            if (days[i].checked) {
-                availability.append(days[i].value);
-            }
-        }
-        //TODO: POST changes to backend
+        let availabilityArr = getAvailability();
+        let creator = userID;
+        let members_id = [];
+
+        //POST: /group/create
         
-        //remove error message if it exists print saved successfully
-        if (document.getElementById('save-group-error') !== null) {
-            modalBody.removeChild(document.getElementById('save-group-error'));
-        }
-        let div = document.createElement('div');
-
-        div.classList.add("row");
-        div.classList.add("modal-row");
-        div.classList.add("alert");
-        div.classList.add("alert-success");
-
-        div.setAttribute('role', 'alert');
-        div.innerHTML = "Successfuly added group! Please close the tab.";
-        modalBody.appendChild(div);
+        createSuccessAlert(modalBody, "Successfuly added group! Please close the tab.");
     }
 });
 
-//TODO: When my groups clicked, it should render user group data on content page
+
+function createDangerAlert(parent, innerText) {
+    let successAlert = document.getElementById('save-group-success')
+    if (successAlert !== null) {
+        parent.removeChild(successAlert);
+    }
+    let div = document.createElement('div');
+    div.classList.add("row");
+    div.classList.add("modal-row");
+    div.classList.add("alert");
+    div.classList.add("alert-danger");
+    div.setAttribute('role', 'alert');
+    div.setAttribute('id', 'save-group-error');
+    div.innerHTML = innerText;
+    parent.appendChild(div);
+    return div;
+}
+
+function getAvailability() {
+    let availability = [];
+    let days = document.getElementsByClassName('availability');
+    for (let i=0; i<days.length; i++) {
+        if (days[i].checked) {
+            availability.append(days[i].value);
+        }
+    }
+    return availability;
+}
+
+function createSuccessAlert(parent, innerText) {
+    let errorAlert = document.getElementById('save-group-error');
+    if (errorAlert !== null) {
+        parent.removeChild(errorAlert);
+    }
+
+    let div = document.createElement('div');
+    div.classList.add("row");
+    div.classList.add("modal-row");
+    div.classList.add("alert");
+    div.classList.add("alert-success");
+    div.setAttribute('role', 'alert');
+    div.setAttribute('id', 'save-group-success');
+    div.innerHTML = innerText;
+    parent.appendChild(div);
+}
+
+//TODO: my-groups btn clicked --> render accordion
 document.getElementById('my-groups-btn').addEventListener('click', () => {
     let userGroups = currentUser.groups;
     renderAccordion(userGroups);
