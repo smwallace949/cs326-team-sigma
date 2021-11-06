@@ -8,9 +8,9 @@ let userID = 0;
 let currentUser = users[userID];
 
 let classes = {
-    0: {course_name:'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[]}, 
-    1: {course_name:'CS326', professors: ['Emery Berger'], groups:[]}, 
-    2: {course_name:'CS220', professors: ['Marius Minea'], groups:[]},
+    0: {course_name:'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[0,1,2]}, 
+    1: {course_name:'CS326', professors: ['Emery Berger'], groups:[0,1]}, 
+    2: {course_name:'CS220', professors: ['Marius Minea'], groups:[0]},
     3: {course_name:'CS383', professors: ['Mathew Rattigan'], groups:[]}
 };
 
@@ -43,6 +43,7 @@ let groups = {
 }
 //TODO: onload() get user obj from login, render user classes, and user groups.
 
+
 //TODO: add-class btn click --> populate class dropdown
 document.getElementById('add-class-btn').addEventListener('click', () => {
     let classDropdown = document.getElementById('add-class-dropdown');
@@ -67,7 +68,9 @@ document.getElementById('save-class').addEventListener('click', () => {
 function renderClassColumn() {
     let classColumn = document.getElementById('my-classes');
     let classBtns = document.getElementById('class-column');
-    classColumn.removeChild(classBtns);
+    if (classBtns !== null) {
+        classColumn.removeChild(classBtns);
+    }
 
     let newClassBtns = document.createElement('div');
     newClassBtns.classList.add('class-buttons');
@@ -76,20 +79,89 @@ function renderClassColumn() {
     for (let course_id of currentUser.courses) {
         let btn = document.createElement('button');
         btn.setAttribute('type', 'button');
-        btn.classList.add('btn', 'btn-outline-primary', 'btn-block');
+        btn.classList.add('btn', 'btn-outline-primary', 'btn-block', 'class-btn');
         btn.setAttribute('value', course_id);
-        btn.innerHTML = classes[course_id].course_name; 
+        btn.innerHTML = classes[course_id].course_name;
+        btn.addEventListener('click', () => {
+            //GET: /course/:course_id
+            renderFilter(classes[course_id].professors);
+            renderAccordion(classes[course_id].groups);
+        }); 
         newClassBtns.appendChild(btn);
     }
     classColumn.appendChild(newClassBtns);
+}
+
+function renderFilter(professorArr) {
+    let container = document.createElement('div');
+    container.classList.add('container', 'filter-bar');
+    container.setAttribute('id', 'filter');
+        let row = document.createElement('div');
+        row.classList.add('row');
+            let teacherCol = document.createElement('span');
+            teacherCol.classList.add('col');
+                let teacherDrop = document.createElement('select');
+                teacherDrop.classList.add('form-select');
+                teacherDrop.setAttribute('id','teacher-filter-dropdown');
+                    let def = document.createElement('option');
+                    def.setAttribute('value', 'teacher');
+                    def.innerHTML = "Teacher";
+                    for (let teacherStr of professorArr) {
+                        let def = document.createElement('option');
+                        def.setAttribute('value', teacherStr);
+                        def.innerHTML = teacherStr;
+                    }
+                teacherDrop.appendChild(def);
+            teacherCol.appendChild(teacherDrop);
+
+            let minSizeCol = document.createElement('span');
+            minSizeCol.classList.add('col');
+                let inpMin = document.createElement('div');
+                inpMin.classList.add('input-group', 'mb-3');
+                    let s = document.createElement('span');
+                    s.classList.add('input-group-text');
+                    s.innerHTML = "Min Size: ";
+                    let i = document.createElement('input');
+                    i.classList.add('form-control');
+                    i.setAttribute('type', 'text');
+                    i.setAttribute('id', 'min-size-filter');
+                [s,i].forEach(x => inpMin.appendChild(x));
+            minSizeCol.appendChild(inpMin);
+
+            let maxSizeCol = document.createElement('span');
+            maxSizeCol.classList.add('col');
+            let inpMax = document.createElement('div');
+                inpMax.classList.add('input-group', 'mb-3');
+                    let s2 = document.createElement('span');
+                    s2.classList.add('input-group-text');
+                    s2.innerHTML = "Max Size: ";
+                    let i2 = document.createElement('input');
+                    i2.classList.add('form-control');
+                    i2.setAttribute('type', 'text');
+                    i2.setAttribute('id', 'min-size-filter');
+                [s2, i2].forEach(x => inpMax.appendChild(x));
+            maxSizeCol.appendChild(inpMax);
+
+            let btnCol = document.createElement('span');
+            btnCol.classList.add('col');
+                let filterBtn = document.createElement('button');
+                filterBtn.setAttribute('type', 'button');
+                filterBtn.setAttribute('id', 'filter-btn');
+                filterBtn.classList.add("btn", "btn-primary", "btn-block");
+                filterBtn.innerHTML = 'Filter';
+            btnCol.appendChild(filterBtn);
+        [teacherCol,minSizeCol,maxSizeCol,btnCol].forEach(x => row.appendChild(x));
+    container.appendChild(row);
+
+    let contColumn = document.getElementById('content-column');
+    contColumn.insertBefore(container, contColumn.childNodes[0]);
 }
 
 
 //TODO: add-group btn --> render classes dropdown in modal
 document.getElementById('addGroupButton').addEventListener('click', () => {
     let classDropdown = document.getElementById('class-dropdown');
-    //GET class/read/all
-    for (let classKey in classes) {
+    for (let classKey in currentUser.courses) {
         let opt = document.createElement('option');
         opt.value = classKey;
         opt.innerHTML = classes[classKey].course_name;
@@ -187,13 +259,17 @@ function createSuccessAlert(parent, innerText) {
 //TODO: my-groups btn clicked --> render accordion
 document.getElementById('my-groups-btn').addEventListener('click', () => {
     let userGroups = currentUser.groups;
+    let filterBar = document.getElementById('filter');
+    if (filterBar !== null) {
+        contentColumn.removeChild(filterBar);
+    }
     renderAccordion(userGroups);
 });
 
 function renderAccordion(groups_t) {
     let contentColumn = document.getElementById('content-column');
     contentColumn.removeChild(document.getElementById('my-groups-accordion'));
-    
+
     let newAccordion = document.createElement('div');
     newAccordion.classList.add("accordion");
     newAccordion.setAttribute('id', 'my-groups-accordion');
@@ -274,5 +350,60 @@ function renderAccordion(groups_t) {
     }
     contentColumn.appendChild(newAccordion);
 }
+
+//TODO: Delete Modal --> render classes and groups wih values=id
+document.getElementById('delete-btn').addEventListener('click', () => {
+    let classDropdown = document.getElementById('delete-class-dropdown');
+    for (let classKey of currentUser.courses) {
+        let opt = document.createElement('option');
+        opt.value = classKey;
+        opt.innerHTML = classes[classKey].course_name;
+        classDropdown.appendChild(opt);
+    }
+
+    let groupdropdown = document.getElementById('delete-group-dropdown');
+    for (let groupID of currentUser.groups) {
+        //GET group with group_id (nested fetches seems like a bad idea)
+        let curGroup = groups[groupID];
+        let opt = document.createElement('option');
+        opt.value = groupID;
+        opt.innerHTML = curGroup.course_name;
+        groupdropdown.appendChild(opt);
+    }
+});
+
+//TODO: Delete Modal --> if class or group selected, block out other option.
+let delClassDrop = document.getElementById('delete-class-dropdown');
+let delGroupDrop = document.getElementById('delete-group-dropdown');
+
+delClassDrop.addEventListener('click', () => {
+    if (delClassDrop.value !== 'class') {
+        delGroupDrop.setAttribute('disabled', 'true');
+    } else {
+        delGroupDrop.disabled = false;
+    }
+});
+delGroupDrop.addEventListener('click', () => {
+    if (delGroupDrop.value !== 'group') {
+        delClassDrop.setAttribute('disabled', 'true');
+    } else {
+        delClassDrop.disabled = false;
+    }
+});
+
+//TODO: Delete Modal --> Save Changes
+document.getElementById('delete-save').addEventListener('click', () => {
+    let modalBody = document.getElementById('delete-modal-body');
+    if (!delClassDrop.disabled && !delGroupDrop) {
+        createDangerAlert(modalBody, "You have not selected a group or class");
+    } else if (!delClassDrop.disabled) {
+        let classID = delClassDrop.value;
+        let userID = userID;
+        //POST: /user/removeCourse
+    } else if (!delGroupDrop) {
+        let groupID = delGroupDrop.value;
+        let userID = userID;
+        //POST /group/delete
+    }
+});
 //TODO: when a class is clicked, it shoulder render groups for that class on content page
-//TODO: Delete page
