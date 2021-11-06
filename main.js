@@ -1,15 +1,18 @@
-const url = "https://shielded-spire-81354.herokuapp.com";
-
 let users = {
-    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: ['CS326', 'CS345']},
+    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
     1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu"},
     2: {name:'Sam Wallace', email: "swallace@umass.edu"}
 };
-
-let classes = {'CS345': ['Jaime Davila', 'Marco Serafini'], 
-    'CS326': ['Emery Berger'], 
-    'CS220': ['Marius Minea'], 
-    'CS383': ['Mathew Rattigan']
+/*int course_id
+string course_name
+array<string> professors
+array<int> groups
+*/
+let classes = {
+    0: {course_name: 'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[]}, 
+    1: {course_name:'CS326', professors: ['Emery Berger'], groups:[]}, 
+    2: {course_name:'CS220', professors: ['Marius Minea'], groups:[]},
+    3: {course_name: 'CS383', professors: ['Mathew Rattigan'], groups:[]}
 };
 
 let groups = {
@@ -39,8 +42,31 @@ let groups = {
         member_ids: [0,1,2]
     }
 }
+//TODO: onload() get userID from login, render user classes, and user groups.
 
-//TODO: When create group clicked, render drop class drop down
+//TODO: when add class clicked, populate drop down menu
+document.getElementById('add-class-btn').addEventListener('click', () => {
+    let classKey;
+    let classDropdown = document.getElementById('add-class-dropdown');
+
+    //GET class/read/all
+    for (classKey in classes) {
+        let opt = document.createElement('option');
+        opt.value = classKey;
+        opt.innerHTML = classes[classKey].course_name;
+        classDropdown.appendChild(opt);
+    }
+});
+
+//TODO: save-changes-btn for add class to user
+document.getElementById('save-class').addEventListener('click', () => {
+    let selectedCourseID = document.getElementById('add-class-dropdown').value;
+    //POST /user/addCourse/
+    //Render Class Column
+});
+
+
+//TODO: When add-group-btn clicked, render drop class drop down
 document.getElementById('addGroupButton').addEventListener('click', () => {
     let classKey;
     let classDropdown = document.getElementById('class-dropdown');
@@ -53,20 +79,7 @@ document.getElementById('addGroupButton').addEventListener('click', () => {
     }
 });
 
-//TODO: when add class clicked, populate drop down menu
-document.getElementById('add-class-btn').addEventListener('click', () => {
-    let classKey;
-    let classDropdown = document.getElementById('add-class-dropdown');
-    for (classKey in classes) {
-        //add classkey as option to class dropdown
-        let opt = document.createElement('option');
-        opt.value = classKey;
-        opt.innerHTML = classKey;
-        classDropdown.appendChild(opt);
-    }
-});
-
-//TODO: When class picked, enable the pick teacher button and populate teachers from selected class
+//TODO: Connected to btn above. When class picked, enable the pick teacher button and populate teachers from selected class
 let classDropdown = document.getElementById('class-dropdown');
 classDropdown.addEventListener('click', () => {
     if (classDropdown.value !== 'class') { //if a value was selected other than the default
@@ -116,9 +129,7 @@ document.getElementById('saveAddedGroup').addEventListener('click', () => {
                 availability.append(days[i].value);
             }
         }
-        //TODO: store into objs
-        let userGroups = {}; //{groupID: {name: '', size: 0, availability: [], members=[], }}
-        let classGroups = {}; //{class: {groups: [], name: '', size: 0, availability: []}}
+        //TODO: POST changes to backend
         
         //remove error message if it exists print saved successfully
         if (document.getElementById('save-group-error') !== null) {
@@ -154,6 +165,7 @@ document.getElementById('my-groups-btn').addEventListener('click', () => {
     for (let group_id of userGroups) {
         //GET group with group_id
         let curGroup = groups[group_id];
+
         let idTarget = "collapse" + group_id.toString();
         let accrdItem = document.createElement('div');
         accrdItem.classList.add('accordion-item');
