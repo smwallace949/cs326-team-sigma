@@ -1,19 +1,16 @@
-//const url = "https://shielded-spire-81354.herokuapp.com"; //for deployment
-const url  = "http://localhost:3000";//for local testing (npm start)
-
-
-
 let users = {
     0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
-    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu"},
-    2: {name:'Sam Wallace', email: "swallace@umass.edu"}
+    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu", groups: [0], courses: [1, 3]},
+    2: {name:'Sam Wallace', email: "swallace@umass.edu", groups: [0,1,2], courses: [0,1,2,3,]}
 };
 
+let currentUser = users[0];
+
 let classes = {
-    0: {course_name: 'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[]}, 
+    0: {course_name:'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[]}, 
     1: {course_name:'CS326', professors: ['Emery Berger'], groups:[]}, 
     2: {course_name:'CS220', professors: ['Marius Minea'], groups:[]},
-    3: {course_name: 'CS383', professors: ['Mathew Rattigan'], groups:[]}
+    3: {course_name:'CS383', professors: ['Mathew Rattigan'], groups:[]}
 };
 
 let groups = {
@@ -43,17 +40,16 @@ let groups = {
         member_ids: [0,1,2]
     }
 }
-//TODO: onload() get userID from login, render user classes, and user groups.
+//TODO: onload() get user obj from login, render user classes, and user groups.
 
 //TODO: when add class clicked, populate drop down menu
 document.getElementById('add-class-btn').addEventListener('click', () => {
-    let classKey;
     let classDropdown = document.getElementById('add-class-dropdown');
 
     //GET class/read/all
-    for (classKey in classes) {
+    for (let classKey in classes) {
         let opt = document.createElement('option');
-        opt.value = classKey;
+        opt.value = classKey.toString();
         opt.innerHTML = classes[classKey].course_name;
         classDropdown.appendChild(opt);
     }
@@ -63,8 +59,29 @@ document.getElementById('add-class-btn').addEventListener('click', () => {
 document.getElementById('save-class').addEventListener('click', () => {
     let selectedCourseID = document.getElementById('add-class-dropdown').value;
     //POST /user/addCourse/
-    //Render Class Column
+    currentUser.courses.push(selectedCourseID);
+    renderClassColumn();
 });
+
+function renderClassColumn() {
+    let classColumn = document.getElementById('my-classes');
+    let classBtns = document.getElementById('class-column');
+    classColumn.removeChild(classBtns);
+
+    let newClassBtns = document.createElement('div');
+    newClassBtns.classList.add('class-buttons');
+    newClassBtns.setAttribute('id', 'class-column');
+
+    for (let course_id of currentUser.courses) {
+        let btn = document.createElement('button');
+        btn.setAttribute('type', 'button');
+        btn.classList.add('btn', 'btn-outline-primary', 'btn-block');
+        btn.setAttribute('value', course_id);
+        btn.innerHTML = classes[course_id].course_name; 
+        newClassBtns.appendChild(btn);
+    }
+    classColumn.appendChild(newClassBtns);
+}
 
 
 //TODO: When add-group-btn clicked, render drop class drop down
@@ -149,8 +166,13 @@ document.getElementById('saveAddedGroup').addEventListener('click', () => {
     }
 });
 
-//TODO: When my groups clicked, it should render user data groups on content page
+//TODO: When my groups clicked, it should render user group data on content page
 document.getElementById('my-groups-btn').addEventListener('click', () => {
+    let userGroups = currentUser.groups;
+    renderAccordion(userGroups);
+});
+
+function renderAccordion(groups_t) {
     let contentColumn = document.getElementById('content-column');
     contentColumn.removeChild(document.getElementById('my-groups-accordion'));
     
@@ -158,12 +180,7 @@ document.getElementById('my-groups-btn').addEventListener('click', () => {
     newAccordion.classList.add("accordion");
     newAccordion.setAttribute('id', 'my-groups-accordion');
 
-    //GET user_ID, GET user group_ids, 
-    let userID = 0;
-    let userInfo = users[userID];
-    let userGroups = userInfo['groups'];
-    
-    for (let group_id of userGroups) {
+    for (let group_id of groups_t) {
         //GET group with group_id
         let curGroup = groups[group_id];
 
@@ -237,48 +254,7 @@ document.getElementById('my-groups-btn').addEventListener('click', () => {
         accrdItem.appendChild(accrdCollapseDiv);
         newAccordion.appendChild(accrdItem);
     }
-    
     contentColumn.appendChild(newAccordion);
-});
-/*
-let user = {
-    0: {name:'Alan', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: ['CS326', 'CS345']},
-    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu"},
-    2: {name:'Sam Wallace', email: "swallace@umass.edu"}
-};
-
-let classes = {'CS345': ['Jaime Davila', 'Marco Serafini'], 
-    'CS326': ['Emery Berger'], 
-    'CS220': ['Marius Minea'], 
-    'CS383': ['Mathew Rattigan']
-};
-
-let groups = {
-    0: {created_by: 'Alan', 
-        name: 'Night Grinders1',
-        meetings_days: ['Teus', 'Wed', 'Thurs'],
-        course_name: 'CS326',
-        prof_name: 'Emery Berger',
-        max_size: 3,
-        member_ids: [0,1,2]
-    },
-    1: {created_by: 'Alan', 
-        name: 'CodeTrek1',
-        meetings_days: ['Teus', 'Wed', 'Thurs'],
-        course_name: 'CS326',
-        prof_name: 'Emery Berger',
-        max_size: 4,
-        member_ids: [0,1,2]
-    },
-    2: {
-        created_by: 'Alan', 
-        name: 'JavaSip1',
-        meetings_days: ['Teus', 'Wed', 'Thurs'],
-        course_name: 'CS326',
-        prof_name: 'Jaime Davila',
-        max_size: 4,
-        member_ids: [0,1,2]
-    }
-}*/
+}
 //TODO: when a class is clicked, it shoulder render groups for that class on content page
 //TODO: Delete page
