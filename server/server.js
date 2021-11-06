@@ -6,11 +6,52 @@ const path = require('path');
 
 let currUser = -1;
 
+// let sampleUsers = {
+//     0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
+//     1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu"},
+//     2: {name:'Sam Wallace', email: "swallace@umass.edu", password = "12345"}
+// };
+
+// let sampleCourses = {
+//     0: {course_name: 'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[]}, 
+//     1: {course_name:'CS326', professors: ['Emery Berger'], groups:[]}, 
+//     2: {course_name:'CS220', professors: ['Marius Minea'], groups:[]},
+//     3: {course_name: 'CS383', professors: ['Mathew Rattigan'], groups:[]}
+// };
+
+// let sampleGroups = {
+//     0: {created_by: 'Alan', 
+//         name: 'Night Grinders1',
+//         meetings_days: ['Teus', 'Wed', 'Thurs'],
+//         course_name: 'CS326',
+//         prof_name: 'Emery Berger',
+//         max_size: 3,
+//         member_ids: [0,1,2]
+//     },
+//     1: {created_by: 'Alan', 
+//         name: 'CodeTrek1',
+//         meetings_days: ['Teus', 'Wed', 'Thurs'],
+//         course_name: 'CS326',
+//         prof_name: 'Emery Berger',
+//         max_size: 4,
+//         member_ids: [0,1,2]
+//     },
+//     2: {
+//         created_by: 'Alan', 
+//         name: 'JavaSip1',
+//         meetings_days: ['Teus', 'Wed', 'Thurs'],
+//         course_name: 'CS326',
+//         prof_name: 'Jaime Davila',
+//         max_size: 4,
+//         member_ids: [0,1,2]
+//     }
+// }
+
 let sampleUsers = {};
 
-let sampleGroups = {};
-
 let sampleCourses = {};
+
+let sampleGroups = {};
 
 const app = express();
 
@@ -31,10 +72,10 @@ function readByID(idx, data, res){
     }
 }
 
-function updateByID(idx, data, modifier, res){
-    if(idx in data){
-        modifier(data[idx]);
-        res.status(200).send(data[idx]);
+function addByID(idx, obj, member, val, res){
+    if(idx in obj){
+        if(!(val in obj[idx][member]))obj[idx][member].push(val);
+        res.status(200).send(obj[idx][member]);
     }else{
         res.status(404).send({err:"Invalid id"});
     }
@@ -123,13 +164,13 @@ app.get('/user/read/id/:user_id', (req, res) => {
 
 app.post('/user/update/addGroup', (req, res) => {
 
-    updateByID(req.body.user_id, sampleUsers, (user) => user.groups.push(req.body.group_id), res);
+    addByID(req.body.user_id, sampleUsers, "groups", req.body.group_id, res);
   
 });
 
 app.post('/user/update/addCourse', (req, res) => {
 
-    updateByID(req.body.user_id, sampleUsers, (user) => user.courses.push(req.body.course_id), res);
+    addByID(req.body.user_id, sampleUsers, "courses", req.body.course_id, res);
   
 });
 
@@ -222,7 +263,7 @@ app.get('/group/search', (req, res) => {
   
 app.post('/group/update/addUser', (req, res) => {
   
-    updateByID(req.body.group_id, sampleGroups, (group) => group.member_ids.push(req.body.user_id), res);
+    addByID(req.body.group_id, sampleGroups, "member_ids", req.body.user_id, res);
     
 });
 
