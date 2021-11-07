@@ -1,12 +1,4 @@
-let users = {
-    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
-    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu", groups: [0], courses: [1, 3]},
-    2: {name:'Sam Wallace', email: "swallace@umass.edu", groups: [0,1,2], courses: [0,1,2,3,]}
-};
-
-let userID = 0;
-let currentUser = users[userID];
-
+/*
 let classes = {
     0: {course_name:'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[0,1,2]}, 
     1: {course_name:'CS326', professors: ['Emery Berger'], groups:[0,1]}, 
@@ -40,19 +32,44 @@ let groups = {
         max_size: 4,
         member_ids: [0,1,2]
     }
-}
-//TODO: onload() get user obj from login, render user classes, and user groups.
+}*/
+let users = {
+    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
+    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu", groups: [0], courses: [1, 3]},
+    2: {name:'Sam Wallace', email: "swallace@umass.edu", groups: [0,1,2], courses: [0,1,2,3,]}
+};
 
+let userID = 0;
+let currentUser = users[userID];
+
+const url  = "https://shielded-spire-81354.herokuapp.com/"
+async function fetchDefaultReturn(url, params){
+    return await fetch(url, params)
+    .then(async res => {
+        if(!res.ok)throw new Error(res.status);
+        return await res.json();
+    }).then((res)=>{
+        return res;
+    })
+    .catch((err) => {
+        console.log(err);
+    });
+}
+
+//GET class/read/all
+let courses = await fetchDefaultReturn(url+'/course/read/all').then(res=>res).catch(err => err);
+console.log(courses);
+
+//TODO: onload() get user obj from login, render user classes, and user groups.
 
 //TODO: add-class btn click --> populate class dropdown
 document.getElementById('add-class-btn').addEventListener('click', () => {
     let classDropdown = document.getElementById('add-class-dropdown');
 
-    //GET class/read/all
-    for (let classKey in classes) {
+    for (let classKey in courses) {
         let opt = document.createElement('option');
         opt.value = classKey.toString();
-        opt.innerHTML = classes[classKey].course_name;
+        opt.innerHTML = courses[classKey];
         classDropdown.appendChild(opt);
     }
 });
@@ -61,7 +78,15 @@ document.getElementById('add-class-btn').addEventListener('click', () => {
 document.getElementById('save-class').addEventListener('click', () => {
     let selectedCourseID = document.getElementById('add-class-dropdown').value;
     //POST /user/addCourse/
-    currentUser.courses.push(selectedCourseID);
+    currentUser.courses = await fetchDefaultReturn(url+'/user/update/addGroup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body:JSON.stringify({user_id:userID, group_id:selectedCourseID})
+    }).then(res=>res).catch(err => err);
+
+    //currentUser.courses.push(selectedCourseID);
     renderClassColumn();
 });
 
@@ -81,11 +106,12 @@ function renderClassColumn() {
         btn.setAttribute('type', 'button');
         btn.classList.add('btn', 'btn-outline-primary', 'btn-block', 'class-btn');
         btn.setAttribute('value', course_id);
-        btn.innerHTML = classes[course_id].course_name;
+        btn.innerHTML = courses[course_id];
         btn.addEventListener('click', () => {
             //GET: /course/:course_id
-            renderFilter(classes[course_id].professors);
-            renderAccordion(classes[course_id].groups);
+            let curCourse = await fetchDefaultReturn(url+`/course/read/${course_id}`).then(res=>res).catch(err => err);
+            renderFilter(curCourse.professors);
+            renderAccordion(curCourse.groups);
         }); 
         newClassBtns.appendChild(btn);
     }
@@ -176,7 +202,9 @@ document.getElementById('class-dropdown').addEventListener('click', () => {
     if (classDropdown.value !== 'class') {
         teacherDropdown.disabled = false;
         //GET class/read/all
-        let teacherArr = classes[classDropdown.value].professors;
+        let curCourse = await fetchDefaultReturn(url+`/course/read/${classDropdown.value}`).then(res=>res).catch(err => err);
+        let teacherArr = curCourse.professors;
+        //let teacherArr = classes[classDropdown.value].professors;
         for (let teacher of teacherArr) {
             let opt = document.createElement('option');
             opt.value = teacher;
@@ -199,12 +227,23 @@ document.getElementById('saveAddedGroup').addEventListener('click', () => {
         let class_id = document.getElementById('class-dropdown').value;
         let teacher = teacherDropdown.value;
         let size = document.getElementById('max-size-txt').value;
-        let name = document.getElementById('group-name').value;
+        let gname = document.getElementById('group-name').value;
         let availabilityArr = getAvailability();
         let creator = userID;
-        let members_id = [];
 
         //POST: /group/create
+        currentUser.groups = await fetchDefaultReturn(url + '/group/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body:JSON.stringify({created_by: creator, 
+                name: gname, 
+                meetings_days: availabilityArr, 
+                course_id: class_id, 
+                prof_name: teacher,
+                max_size: size})
+        }).then(res=>res).catch(err => err);
         
         createSuccessAlert(modalBody, "Successfuly added group! Please close the tab.");
     }
@@ -276,7 +315,8 @@ function renderAccordion(groups_t) {
 
     for (let group_id of groups_t) {
         //GET group with group_id
-        let curGroup = groups[group_id];
+        let curGroup = await fetchDefaultReturn(url+`/group/read/${group_id}`).then(res=>res).catch(err => err);
+        //let curGroup = groups[group_id];
 
         let idTarget = "collapse" + group_id.toString();
         let accrdItem = document.createElement('div');
@@ -364,7 +404,8 @@ document.getElementById('delete-btn').addEventListener('click', () => {
     let groupdropdown = document.getElementById('delete-group-dropdown');
     for (let groupID of currentUser.groups) {
         //GET group with group_id (nested fetches seems like a bad idea)
-        let curGroup = groups[groupID];
+        let curGroup = await fetchDefaultReturn(url+`/group/read/${groupID}`).then(res=>res).catch(err => err);
+        //let curGroup = groups[groupID];
         let opt = document.createElement('option');
         opt.value = groupID;
         opt.innerHTML = curGroup.course_name;
