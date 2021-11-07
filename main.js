@@ -42,7 +42,8 @@ let users = {
 let userID = 0;
 let currentUser = users[userID];
 
-const url  = "https://shielded-spire-81354.herokuapp.com/"
+const url = "http://localhost:3000";
+//const url  = "https://shielded-spire-81354.herokuapp.com/"
 async function fetchDefaultReturn(url, params){
     return await fetch(url, params)
     .then(async res => {
@@ -56,15 +57,23 @@ async function fetchDefaultReturn(url, params){
     });
 }
 
-//GET class/read/all
-let courses = await fetchDefaultReturn(url+'/course/read/all').then(res=>res).catch(err => err);
-console.log(courses);
 
 //TODO: onload() get user obj from login, render user classes, and user groups.
 
+
+window.addEventListener('load', () => {
+    if (document.getElementById('home') !== null){
+        renderAccordion(currentUser.groups);
+        renderClassColumn(currentUser.courses);
+    }
+});
 //TODO: add-class btn click --> populate class dropdown
-document.getElementById('add-class-btn').addEventListener('click', () => {
+
+
+document.getElementById('add-class-btn').addEventListener('click', async () => {
     let classDropdown = document.getElementById('add-class-dropdown');
+
+    let courses = await fetchDefaultReturn(url+'/course/read/all').then(res=>res).catch(err => err);
 
     for (let classKey in courses) {
         let opt = document.createElement('option');
@@ -75,7 +84,7 @@ document.getElementById('add-class-btn').addEventListener('click', () => {
 });
 
 //TODO: add-class btn --> save changes
-document.getElementById('save-class').addEventListener('click', () => {
+document.getElementById('save-class').addEventListener('click', async () => {
     let selectedCourseID = document.getElementById('add-class-dropdown').value;
     //POST /user/addCourse/
     currentUser.courses = await fetchDefaultReturn(url+'/user/update/addGroup', {
@@ -90,12 +99,14 @@ document.getElementById('save-class').addEventListener('click', () => {
     renderClassColumn();
 });
 
-function renderClassColumn() {
+async function renderClassColumn() {
     let classColumn = document.getElementById('my-classes');
     let classBtns = document.getElementById('class-column');
     if (classBtns !== null) {
         classColumn.removeChild(classBtns);
     }
+
+    let courses = await fetchDefaultReturn(url+'/course/read/all').then(res=>res).catch(err => err);
 
     let newClassBtns = document.createElement('div');
     newClassBtns.classList.add('class-buttons');
@@ -107,9 +118,10 @@ function renderClassColumn() {
         btn.classList.add('btn', 'btn-outline-primary', 'btn-block', 'class-btn');
         btn.setAttribute('value', course_id);
         btn.innerHTML = courses[course_id];
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
             //GET: /course/:course_id
             let curCourse = await fetchDefaultReturn(url+`/course/read/${course_id}`).then(res=>res).catch(err => err);
+            console.log(curCourse);
             renderFilter(curCourse.professors);
             renderAccordion(curCourse.groups);
         }); 
@@ -185,18 +197,18 @@ function renderFilter(professorArr) {
 
 
 //TODO: add-group btn --> render classes dropdown in modal
-document.getElementById('addGroupButton').addEventListener('click', () => {
+document.getElementById('addGroupButton').addEventListener('click', async () => {
     let classDropdown = document.getElementById('class-dropdown');
     for (let classKey in currentUser.courses) {
         let opt = document.createElement('option');
         opt.value = classKey;
-        opt.innerHTML = classes[classKey].course_name;
+        opt.innerHTML = (await fetchDefaultReturn(url+`/course/read/${classKey}`).then(res=>res).catch(err => err)).course_name;
         classDropdown.appendChild(opt);
     }
 });
 
 //TODO: add-group modal --> class-dropdown --> render teacher-dropdown
-document.getElementById('class-dropdown').addEventListener('click', () => {
+document.getElementById('class-dropdown').addEventListener('click', async () => {
     let teacherDropdown = document.getElementById('teacher-dropdown');
     let classDropdown = document.getElementById('class-dropdown');
     if (classDropdown.value !== 'class') {
@@ -217,7 +229,7 @@ document.getElementById('class-dropdown').addEventListener('click', () => {
 });
 
 //TODO: add-group modal --> save changes
-document.getElementById('saveAddedGroup').addEventListener('click', () => {
+document.getElementById('saveAddedGroup').addEventListener('click', async () => {
     let modalBody = document.getElementById('add-group-modal-body');
     let teacherDropdown = document.getElementById('teacher-dropdown');
     if (teacherDropdown.disabled) {
@@ -272,7 +284,7 @@ function getAvailability() {
     let days = document.getElementsByClassName('availability');
     for (let i=0; i<days.length; i++) {
         if (days[i].checked) {
-            availability.append(days[i].value);
+            availability.push(days[i].value);
         }
     }
     return availability;
@@ -300,12 +312,12 @@ document.getElementById('my-groups-btn').addEventListener('click', () => {
     let userGroups = currentUser.groups;
     let filterBar = document.getElementById('filter');
     if (filterBar !== null) {
-        contentColumn.removeChild(filterBar);
+        document.getElementById('content-column').removeChild(filterBar);
     }
     renderAccordion(userGroups);
 });
 
-function renderAccordion(groups_t) {
+async function renderAccordion(groups_t) {
     let contentColumn = document.getElementById('content-column');
     contentColumn.removeChild(document.getElementById('my-groups-accordion'));
 
@@ -392,12 +404,12 @@ function renderAccordion(groups_t) {
 }
 
 //TODO: Delete Modal --> render classes and groups wih values=id
-document.getElementById('delete-btn').addEventListener('click', () => {
+document.getElementById('delete-btn').addEventListener('click', async() => {
     let classDropdown = document.getElementById('delete-class-dropdown');
     for (let classKey of currentUser.courses) {
         let opt = document.createElement('option');
         opt.value = classKey;
-        opt.innerHTML = classes[classKey].course_name;
+        opt.innerHTML = (await fetchDefaultReturn(url+`/course/read/${classKey}`).then(res=>res).catch(err => err)).course_name;;
         classDropdown.appendChild(opt);
     }
 
@@ -408,7 +420,7 @@ document.getElementById('delete-btn').addEventListener('click', () => {
         //let curGroup = groups[groupID];
         let opt = document.createElement('option');
         opt.value = groupID;
-        opt.innerHTML = curGroup.course_name;
+        opt.innerHTML = curGroup.name;
         groupdropdown.appendChild(opt);
     }
 });
@@ -433,7 +445,7 @@ delGroupDrop.addEventListener('click', () => {
 });
 
 //TODO: Delete Modal --> Save Changes
-document.getElementById('delete-save').addEventListener('click', () => {
+document.getElementById('delete-save').addEventListener('click', async () => {
     let modalBody = document.getElementById('delete-modal-body');
     if (!delClassDrop.disabled && !delGroupDrop) {
         createDangerAlert(modalBody, "You have not selected a group or class");
@@ -441,9 +453,19 @@ document.getElementById('delete-save').addEventListener('click', () => {
         let classID = delClassDrop.value;
         let userID = userID;
         //POST: /user/removeCourse
-    } else if (!delGroupDrop) {
-        let groupID = delGroupDrop.value;
-        let userID = userID;
+    } else if (!delGroupDrop.disabled) {
+
+        let groupID = parseInt(delGroupDrop.value);
+
+        let updatedGroups = await fetchDefaultReturn(url+'/group/delete', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body:JSON.stringify({user_id: userID, group_id:groupID})
+        }).then(res=>res).catch(err => err);
+        currentUser.groups = updatedGroups;
+        renderAccordion(updatedGroups);
         //POST /group/delete
     }
 });

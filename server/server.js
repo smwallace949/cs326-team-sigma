@@ -6,52 +6,52 @@ const path = require('path');
 
 let currUser = -1;
 
-// let sampleUsers = {
-//     0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
-//     1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu"},
-//     2: {name:'Sam Wallace', email: "swallace@umass.edu", password = "12345"}
-// };
+let sampleUsers = {
+    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
+    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu", groups:[]},
+    2: {name:'Sam Wallace', email: "swallace@umass.edu", password: "12345", groups:[]}
+};
 
-// let sampleCourses = {
-//     0: {course_name: 'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[]}, 
-//     1: {course_name:'CS326', professors: ['Emery Berger'], groups:[]}, 
-//     2: {course_name:'CS220', professors: ['Marius Minea'], groups:[]},
-//     3: {course_name: 'CS383', professors: ['Mathew Rattigan'], groups:[]}
-// };
+let sampleCourses = {
+    0: {course_name: 'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[0,1,2]}, 
+    1: {course_name:'CS326', professors: ['Emery Berger'], groups:[0,1]}, 
+    2: {course_name:'CS220', professors: ['Marius Minea'], groups:[1,2]},
+    3: {course_name: 'CS383', professors: ['Mathew Rattigan'], groups:[2,1]}
+};
 
-// let sampleGroups = {
-//     0: {created_by: 'Alan', 
-//         name: 'Night Grinders1',
-//         meetings_days: ['Teus', 'Wed', 'Thurs'],
-//         course_name: 'CS326',
-//         prof_name: 'Emery Berger',
-//         max_size: 3,
-//         member_ids: [0,1,2]
-//     },
-//     1: {created_by: 'Alan', 
-//         name: 'CodeTrek1',
-//         meetings_days: ['Teus', 'Wed', 'Thurs'],
-//         course_name: 'CS326',
-//         prof_name: 'Emery Berger',
-//         max_size: 4,
-//         member_ids: [0,1,2]
-//     },
-//     2: {
-//         created_by: 'Alan', 
-//         name: 'JavaSip1',
-//         meetings_days: ['Teus', 'Wed', 'Thurs'],
-//         course_name: 'CS326',
-//         prof_name: 'Jaime Davila',
-//         max_size: 4,
-//         member_ids: [0,1,2]
-//     }
-// }
+let sampleGroups = {
+    0: {created_by: 'Alan', 
+        name: 'Night Grinders1',
+        meetings_days: ['Teus', 'Wed', 'Thurs'],
+        course_name: 'CS326',
+        prof_name: 'Emery Berger',
+        max_size: 3,
+        member_ids: [0,1,2]
+    },
+    1: {created_by: 'Alan', 
+        name: 'CodeTrek1',
+        meetings_days: ['Teus', 'Wed', 'Thurs'],
+        course_name: 'CS326',
+        prof_name: 'Emery Berger',
+        max_size: 4,
+        member_ids: [0,1,2]
+    },
+    2: {
+        created_by: 'Alan', 
+        name: 'JavaSip1',
+        meetings_days: ['Teus', 'Wed', 'Thurs'],
+        course_name: 'CS326',
+        prof_name: 'Jaime Davila',
+        max_size: 4,
+        member_ids: [0,1,2]
+    }
+}
 
-let sampleUsers = {};
+// let sampleUsers = {};
 
-let sampleCourses = {};
+// let sampleCourses = {};
 
-let sampleGroups = {};
+// let sampleGroups = {};
 
 const app = express();
 
@@ -89,7 +89,7 @@ function createNewObject(obj, collection, res){
 
     collection[len] = obj;
 
-    res.status(200).send({msg:"New entry created"});
+    res.status(200).send(collection);
 
 }
 
@@ -175,6 +175,22 @@ app.post('/user/update/addCourse', (req, res) => {
 });
 
 
+app.post('/course/removeCourse', (req, res) => {
+    if(req.body.user_id in sampleUsers){
+        if(req.body.course_id in sampleUsers[req.body.user_id]){
+            sampleUsers[req.body.user_id].courses = sampleUsers[req.body.user_id].courses.filter((id) => id !== req.body.course_id);
+            sampleUsers[req.body.user_id].groups = sampleUsers[req.body.user_id].groups.filter((group_id) => !(group_id in sampleCourses[req.body.course_id].groups));
+        }
+        
+        res.status(200).send(sampleUsers[req.body.use_id]);
+
+    }else{
+        res.status(404).send({err:"user does not exist"});
+    }
+    
+});
+
+
 /*
  * 
  * COURSE ENDPOINTS
@@ -187,8 +203,12 @@ app.post('/user/update/addCourse', (req, res) => {
 
 app.post('/course/create', (req, res) => {
 
-    req.body.groups = [];
-    createNewObject(req.body, sampleCourses, res);
+    if(!(req.body.course_name in Object.values(sampleCourses.map((course) => course[course_name])))){
+        req.body.groups = [];
+        createNewObject(req.body, sampleCourses, res);
+    }else{
+        res.status(200).send({msg:"course already exists"});
+    }
   
 });
   
@@ -198,15 +218,10 @@ app.post('/course/create', (req, res) => {
 * Read
 */
   
-app.get('/course/read/:course_id', (req, res) => {
-  
-    readByID(req.params.course_id, sampleCourses, res);
-      
-});
 
 app.get('/course/read/all', (req, res) => {
   
-    out = {};
+    let out = {};
     
     Object.keys(sampleCourses).forEach((id) => {
         out[id] = sampleCourses[id].course_name;
@@ -215,6 +230,11 @@ app.get('/course/read/all', (req, res) => {
     res.status(200).send(out);
 });
 
+app.get('/course/read/:course_id', (req, res) => {
+  
+    readByID(req.params.course_id, sampleCourses, res);
+      
+});
 
 
 /*
@@ -231,8 +251,12 @@ app.get('/course/read/all', (req, res) => {
 app.post('/group/create', (req, res) => {
 
     sampleCourses[req.body.course_id].groups.push(Object.keys(sampleGroups).length);
+    sampleUsers[req.body.created_by].groups.push(Object.keys(sampleGroups).length);
     req.body.member_ids = [req.body.created_by];
-    createNewObject(req.body, sampleGroups, res);
+
+    sampleGroups[Object.keys(sampleGroups).length] = req.body;
+
+    res.status(200).send(sampleUsers[req.body.created_by].groups);
   
 });
   
@@ -243,7 +267,7 @@ app.post('/group/create', (req, res) => {
 */
   
 app.get('/group/read/:group_id', (req, res) => {
-  
+
     readByID(req.params.group_id, sampleGroups, res);
       
 });
@@ -278,12 +302,19 @@ app.post('/group/delete', (req, res) => {
     if(req.body.group_id in sampleGroups){
         delete sampleGroups[req.body.group_id];
         for (let user in sampleUsers){
-            sampleUsers[user].groups = sampleUsers[user].groups.filter((id) => id !== req.body.group_id);
+            console.log("user: "+ user);
+            sampleUsers[user].groups = sampleUsers[user].groups.filter((id) =>{
+                console.log(id !== req.body.group_id);
+                console.log(id);
+                console.log(req.body.group_id);
+                return id !== req.body.group_id;
+            });
         }
         for (let course in sampleCourses){
             sampleCourses[course].groups = sampleCourses[course].groups.filter((id) => id !== req.body.group_id);
         }
-        res.status(200).send({msg:"group deleted"});
+        console.log(sampleUsers[req.body.user_id].groups);
+        res.status(200).send(sampleUsers[req.body.user_id].groups);
     }else{
         res.status(200).send({msg:"group did not exist"});
     }
