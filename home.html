@@ -135,7 +135,7 @@
                     </li> 
                     <!-- Delete Modal--> <li class="nav-item">
                         <!-- Delete Button trigger modal -->
-                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#delete">Delete</button>
+                        <button type="button" class="btn btn-outline-danger" id='delete-btn' data-bs-toggle="modal" data-bs-target="#delete">Delete</button>
 
                         <!-- Delete Modal -->
                         <div class="modal fade" id="delete" >
@@ -147,23 +147,16 @@
                                     </div>
                                     <div class="modal-body">
                                         <div class="col dropdown">
-                                            <select class="form-select" id='delete-dropdown' aria-label="Default select example">
+                                            <select class="form-select" id='delete-class-dropdown' aria-label="Default select example">
                                                 <option value="class">Class</option>
-                                                <option value="class">CS326</option>
-                                                <option value="class">CS345</option>
-                                                <option value="class">CS446</option>
-                                                <option value="class">CS549</option>
                                             </select>
                                         </div>
                                         <div class="row justify-content-center">
                                             OR
                                         </div>
                                         <div class="col dropdown">
-                                            <select class="form-select" aria-label="Default select example" id='group-dropdown'>
-                                                <option value="teacher">Group</option>
-                                                <option value="teacher">Night Grinders</option>
-                                                <option value="teacher">CodeTrek</option>
-                                                <option value="teacher">JavaSip</option>
+                                            <select class="form-select" id='delete-group-dropdown' aria-label="Default select example" id='group-dropdown'>
+                                                <option value="group">Group</option>
                                             </select>
                                         </div>
                                         <div class="modal-footer">
@@ -198,7 +191,7 @@
                                 <h5 class="modal-title">Select Class:</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body" id='delete-modal-body'>
                                 <div class="col dropdown">
                                     <select class="form-select" id='add-class-dropdown' aria-label="Default select example">
                                         <option value="class">Class</option>
@@ -213,12 +206,7 @@
                         </div>
                     </div>
                 </div>
-                <div class='class-buttons'>
-                    <button type="button" class="btn btn-outline-primary btn-block">CS326</button>
-                    <button type="button" class="btn btn-outline-primary btn-block">CS345</button>
-                    <button type="button" class="btn btn-outline-primary btn-block">CS446</button>
-                    <button type="button" class="btn btn-outline-primary btn-block">CS549</button>
-
+                <div class='class-buttons' id='class-column'>
                 </div>
             </div>
 
