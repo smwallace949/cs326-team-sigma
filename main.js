@@ -42,8 +42,8 @@ let users = {
 let userID = 0;
 let currentUser = users[userID];
 
-const url = "http://localhost:3000";
-//const url  = "https://shielded-spire-81354.herokuapp.com/"
+//const url = "http://localhost:3000";
+const url  = "https://shielded-spire-81354.herokuapp.com/"
 async function fetchDefaultReturn(url, params){
     return await fetch(url, params)
     .then(async res => {
