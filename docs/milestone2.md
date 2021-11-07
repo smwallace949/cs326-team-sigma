@@ -20,11 +20,11 @@ Delete Group (delete) - When you delete a group, we make a POST request with the
 
 **API Class Diagram**
 
-![API](User Class API.png)
+![API](User Class API.jpg)
 
-![API](Course Class API.png)
+![API](Course Class API.jpg)
 
-![API](Group Class API.png)
+![API](Group Class API.jpg)
 
 
 **Deployment Link**
