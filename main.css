@@ -1,4 +1,8 @@
 /*Navigation Bar*/
+#brand-name {
+    font-family:'Times New Roman', Times, serif
+}
+
 #navigation-bar {
     background-color: #212529;
     padding-top: 10px;
