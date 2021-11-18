@@ -192,8 +192,8 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body" id='delete-modal-body'>
-                                <div class="col dropdown">
-                                    <select class="form-select" id='add-class-dropdown' aria-label="Default select example">
+                                <div class="col dropdown" id="add-class-container">
+                                    <select class="form-select" id='add-class-dropdown'>
                                         <option value="class">Class</option>
                                     </select>
                                 </div>                                                 
@@ -212,10 +212,14 @@
 
             <!-- Content Column -->
             <div class='col-10 head-col' id='content-column'>
-                <!-- Content Headers --> <div class="container " id='category'>
+                <!-- Content Headers --> 
+                <div class="header-format" id='category'>
                     <div class='row modal-row header-row'>
                         <div class="col cat-header">
-                            Study Group Name
+                            Group Name
+                        </div>
+                        <div class="col cat-header">
+                            Course
                         </div>
                         <div class="col cat-header">
                             Days Week
@@ -226,9 +230,6 @@
                         <div class="col cat-header">
                             Size
                         </div>
-                        <div class="col cat-header">
-                            ID
-                        </div> 
                     </div>
                 </div>
                 

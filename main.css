@@ -65,12 +65,15 @@
     padding-left: 5px;
 }
 
+.header-format {
+    padding-left: 2%;
+    padding-right: 2%;
+}
+
 #category {
     background-color: #0d6efd;
     padding-top: 10px;
-    padding-bottom: 10px;
-    padding-left: 2%;
-    padding-right: 2%;
+    padding-bottom: 10px;    
 }
 
 .head-col {
@@ -97,6 +100,10 @@
     margin-top: 10px;
     justify-content: center;
     width: 80%;
+}
+
+.accordion-body {
+    text-align: center;
 }
 
 /*Filter Bar*/

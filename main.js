@@ -33,17 +33,18 @@ let groups = {
         member_ids: [0,1,2]
     }
 }*/
-let users = {
-    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
-    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu", groups: [0], courses: [1, 3]},
-    2: {name:'Sam Wallace', email: "swallace@umass.edu", groups: [0,1,2], courses: [0,1,2,3,]}
+let sampleUsers = {
+    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,2,4,5], courses: [0,1,3]},
+    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu", groups:[]},
+    2: {name:'Sam Wallace', email: "swallace@umass.edu", password: "12345", groups:[]}
 };
 
 let userID = 0;
-let currentUser = users[userID];
+let currentUser = sampleUsers[userID];
 
-//const url = "http://localhost:3000";
-const url  = "https://shielded-spire-81354.herokuapp.com"
+const url = "http://localhost:3000";
+//const url  = "https://shielded-spire-81354.herokuapp.com"
+
 async function fetchDefaultReturn(url, params){
     return await fetch(url, params)
     .then(async res => {
@@ -59,19 +60,29 @@ async function fetchDefaultReturn(url, params){
 
 
 //TODO: onload() get user obj from login, render user classes, and user groups.
-
-
 window.addEventListener('load', () => {
     if (document.getElementById('home') !== null){
-        renderAccordion(currentUser.groups);
+        renderAccordion(currentUser.groups, "my-groups");
         renderClassColumn(currentUser.courses);
     }
 });
+
 //TODO: add-class btn click --> populate class dropdown
-
-
 document.getElementById('add-class-btn').addEventListener('click', async () => {
-    let classDropdown = document.getElementById('add-class-dropdown');
+    
+    let addClassContainer = document.getElementById('add-class-container');
+    let dropdown = document.getElementById('add-class-dropdown');
+    if (dropdown !== null){
+        addClassContainer.removeChild(dropdown);
+    }
+
+    let selectDropdown = document.createElement('select');
+    selectDropdown.classList.add("form-select");
+    selectDropdown.setAttribute("id", 'add-class-dropdown');
+        let optHead = document.createElement('option');
+        optHead.value = "class";
+        optHead.innerHTML = "Classes";
+        selectDropdown.appendChild(optHead);
 
     let courses = await fetchDefaultReturn(url+'/course/read/all').then(res=>res).catch(err => err);
 
@@ -79,8 +90,10 @@ document.getElementById('add-class-btn').addEventListener('click', async () => {
         let opt = document.createElement('option');
         opt.value = classKey.toString();
         opt.innerHTML = courses[classKey];
-        classDropdown.appendChild(opt);
+        selectDropdown.appendChild(opt);
     }
+
+    addClassContainer.appendChild(selectDropdown);
 });
 
 //TODO: add-class btn --> save changes
@@ -99,6 +112,7 @@ document.getElementById('save-class').addEventListener('click', async () => {
     renderClassColumn();
 });
 
+//TODO: Render class buttons --> click event listener
 async function renderClassColumn() {
     let classColumn = document.getElementById('my-classes');
     let classBtns = document.getElementById('class-column');
@@ -121,18 +135,25 @@ async function renderClassColumn() {
         btn.addEventListener('click', async () => {
             //GET: /course/:course_id
             let curCourse = await fetchDefaultReturn(url+`/course/read/${course_id}`).then(res=>res).catch(err => err);
-            console.log(curCourse);
-            renderFilter(curCourse.professors);
-            renderAccordion(curCourse.groups);
+            renderFilter(curCourse);
+            renderAccordion(curCourse.groups, "add");
         }); 
         newClassBtns.appendChild(btn);
     }
     classColumn.appendChild(newClassBtns);
 }
 
-function renderFilter(professorArr) {
+function renderFilter(curCourseObj) {
+    let professorArr = curCourseObj.professors;
+    let contColumn = document.getElementById('content-column');
+    let oldFilter = document.getElementById("filter");
+
+    if (oldFilter !== null) {
+        contColumn.removeChild(oldFilter);
+    }
+
     let container = document.createElement('div');
-    container.classList.add('container', 'filter-bar');
+    container.classList.add('header-format', 'filter-bar');
     container.setAttribute('id', 'filter');
         let row = document.createElement('div');
         row.classList.add('row');
@@ -144,12 +165,13 @@ function renderFilter(professorArr) {
                     let def = document.createElement('option');
                     def.setAttribute('value', 'teacher');
                     def.innerHTML = "Teacher";
+                    teacherDrop.appendChild(def);
                     for (let teacherStr of professorArr) {
-                        let def = document.createElement('option');
-                        def.setAttribute('value', teacherStr);
-                        def.innerHTML = teacherStr;
+                        let def1 = document.createElement('option');
+                        def1.setAttribute('value', teacherStr);
+                        def1.innerHTML = teacherStr;
+                        teacherDrop.appendChild(def1);
                     }
-                teacherDrop.appendChild(def);
             teacherCol.appendChild(teacherDrop);
 
             let minSizeCol = document.createElement('span');
@@ -161,7 +183,7 @@ function renderFilter(professorArr) {
                     s.innerHTML = "Min Size: ";
                     let i = document.createElement('input');
                     i.classList.add('form-control');
-                    i.setAttribute('type', 'text');
+                    i.setAttribute('type', 'number');
                     i.setAttribute('id', 'min-size-filter');
                 [s,i].forEach(x => inpMin.appendChild(x));
             minSizeCol.appendChild(inpMin);
@@ -175,7 +197,7 @@ function renderFilter(professorArr) {
                     s2.innerHTML = "Max Size: ";
                     let i2 = document.createElement('input');
                     i2.classList.add('form-control');
-                    i2.setAttribute('type', 'text');
+                    i2.setAttribute('type', 'number');
                     i2.setAttribute('id', 'min-size-filter');
                 [s2, i2].forEach(x => inpMax.appendChild(x));
             maxSizeCol.appendChild(inpMax);
@@ -186,15 +208,31 @@ function renderFilter(professorArr) {
                 filterBtn.setAttribute('type', 'button');
                 filterBtn.setAttribute('id', 'filter-btn');
                 filterBtn.classList.add("btn", "btn-primary", "btn-block");
+                //TODO: When filter click --> filter current groups
+                filterBtn.addEventListener("click", async () => {
+                    let selTeacher = teacherDrop.value;
+                    let minSizeInput = i.value;
+                    let maxSizeInput = i2.value;
+                    let filteredGroups = [];
+
+            
+                    
+                    for (let group_id of curCourseObj.groups) {
+                        //GET group with group_id
+                        let curGroup = await fetchDefaultReturn(url+`/group/read/${group_id}`).then(res=>res).catch(err => err);
+                        if (selTeacher !== 'teacher' && curGroup.prof_name === selTeacher && curGroup.max_size >= parseInt(minSizeInput) && curGroup.max_size <= parseInt(maxSizeInput)) {
+                            filteredGroups.push(group_id);
+                        }
+                    }
+                    renderAccordion(filteredGroups, "add");
+                });
                 filterBtn.innerHTML = 'Filter';
             btnCol.appendChild(filterBtn);
         [teacherCol,minSizeCol,maxSizeCol,btnCol].forEach(x => row.appendChild(x));
     container.appendChild(row);
 
-    let contColumn = document.getElementById('content-column');
     contColumn.insertBefore(container, contColumn.childNodes[0]);
 }
-
 
 //TODO: add-group btn --> render classes dropdown in modal
 document.getElementById('addGroupButton').addEventListener('click', async () => {
@@ -314,23 +352,30 @@ document.getElementById('my-groups-btn').addEventListener('click', () => {
     if (filterBar !== null) {
         document.getElementById('content-column').removeChild(filterBar);
     }
-    renderAccordion(userGroups);
+    renderAccordion(userGroups, "my-groups");
 });
 
-async function renderAccordion(groups_t) {
+async function renderAccordion(groups_t, sector) {
     let contentColumn = document.getElementById('content-column');
-    contentColumn.removeChild(document.getElementById('my-groups-accordion'));
+
+    let oldAccordion = document.getElementById('my-groups-accordion');
+    if (oldAccordion !== null) {
+        contentColumn.removeChild(oldAccordion);
+    }
 
     let newAccordion = document.createElement('div');
     newAccordion.classList.add("accordion");
     newAccordion.setAttribute('id', 'my-groups-accordion');
+    for (let groupId of groups_t) {
+        if (currentUser.groups.includes(groupId) && sector==="add") {
+            continue;
+        }
 
-    for (let group_id of groups_t) {
         //GET group with group_id
-        let curGroup = await fetchDefaultReturn(url+`/group/read/${group_id}`).then(res=>res).catch(err => err);
+        let curGroup = await fetchDefaultReturn(url+`/group/read/${groupId}`).then(res=>res).catch(err => err);
         //let curGroup = groups[group_id];
 
-        let idTarget = "collapse" + group_id.toString();
+        let idTarget = "collapse" + groupId.toString();
         let accrdItem = document.createElement('div');
         accrdItem.classList.add('accordion-item');
 
@@ -347,6 +392,12 @@ async function renderAccordion(groups_t) {
             groupNameSpan.innerHTML = curGroup.name;
             accrdBtn.appendChild(groupNameSpan);
             
+            let courseSpan = document.createElement('span');
+            courseSpan.classList.add("col");
+            courseSpan.classList.add("group-attr");
+            courseSpan.innerHTML = curGroup.course_name;
+            accrdBtn.appendChild(courseSpan);
+
             let availabilitySpan = document.createElement('span');
             availabilitySpan.classList.add("col");
             availabilitySpan.classList.add("group-attr");
@@ -369,12 +420,6 @@ async function renderAccordion(groups_t) {
             sizeSpan.innerHTML = curGroup.max_size;
             accrdBtn.appendChild(sizeSpan);
 
-            let idSpan = document.createElement('span');
-            idSpan.classList.add("col");
-            idSpan.classList.add("group-attr");
-            idSpan.innerHTML = group_id;
-            accrdBtn.appendChild(idSpan);
-
         let accrdCollapseDiv = document.createElement('div');
             accrdCollapseDiv.setAttribute("id", idTarget);
             accrdCollapseDiv.classList.add("accordion-collapse");
@@ -388,11 +433,34 @@ async function renderAccordion(groups_t) {
                 accrdBodyDiv.appendChild(titleDiv);
                 for (let member_id of curGroup.member_ids) {
                     let tempDiv = document.createElement('div');
-                    let userInfo = users[member_id]
+                    let userInfo = sampleUsers[member_id]
                     let divStr = userInfo.name;
                     divStr += (" -> " + userInfo.email);
                     tempDiv.innerHTML = divStr;
                     accrdBodyDiv.appendChild(tempDiv);
+                }
+                if (sector==="add") {
+                    let joinButtonContainer = document.createElement('div');
+                    joinButtonContainer.classList.add('row', 'justify-content-center');
+                        let joinBtn = document.createElement('button');
+                        joinBtn.setAttribute('type', 'button');
+                        joinBtn.classList.add('btn', 'btn-success', 'btn-join');
+                        joinBtn.innerHTML = "JOIN"
+                        joinBtn.addEventListener('click', async () => {
+                            currentUser.groups = await fetchDefaultReturn(url + '/user/update/addGroup', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body:JSON.stringify({
+                                    user_id: userID, 
+                                    group_id: groupId, 
+                                })
+                            }).then(res=>res).catch(err => err);
+                            renderAccordion(groups_t, "add");
+                        });
+                    joinButtonContainer.appendChild(joinBtn);
+                    accrdBodyDiv.appendChild(joinButtonContainer);
                 }
             accrdCollapseDiv.appendChild(accrdBodyDiv);
         
@@ -465,7 +533,7 @@ document.getElementById('delete-save').addEventListener('click', async () => {
             body:JSON.stringify({user_id: userID, group_id:groupID})
         }).then(res=>res).catch(err => err);
         currentUser.groups = updatedGroups;
-        renderAccordion(updatedGroups);
+        renderAccordion(updatedGroups, "my-groups");
         //POST /group/delete
     }
 });
