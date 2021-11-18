@@ -3,55 +3,144 @@ const express = require('express');
 const path = require('path');
 // OR import express from 'express';
 
-
 let currUser = -1;
+let secrets;
+let password;
+if (!process.env.PASSWORD) {
+    secrets = require('../secrets.json');
+    password = secrets.password;
+} else {
+	password = process.env.PASSWORD;
+}
+
+const { MongoClient } = require('mongodb');
+const uri = "mongodb+srv://teams:"+password+"@teamsigma.kd2qp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+client.connect(err => {
+    const classes = client.db("StudyBuddy").collection("Classes");
+    //console.log(classes.s.db);
+    //let a =  classes.find({"course_name": "Web Programming"});
+    //console.log(a);
+
+    const groups = client.db("StudyBuddy").collection("Groups");
+    const users = client.db("StudyBuddy").collection("Users");
+    console.log("We're in!");
+    // perform actions on the collection object
+    client.close();
+});
 
 let sampleUsers = {
-    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,1,2], courses: [1, 0]},
-    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu", groups:[]},
-    2: {name:'Sam Wallace', email: "swallace@umass.edu", password: "12345", groups:[]}
+    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", password: "password", linkedIn: 'aacastillo', groups: [0,2,4,5], courses: [0,1,3]},
+    1: {name:'Elisavet Philippakis', password: "password", email: "ephilippakis@umass.edu", groups:[1,2,6,8,9,10]},
+    2: {name:'Sam Wallace', password: "password", email: "swallace@umass.edu", password: "12345", groups:[1,2,3,4,6,7,8,9,10]}
 };
 
 let sampleCourses = {
-    0: {course_name: 'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[0,1,2]}, 
-    1: {course_name:'CS326', professors: ['Emery Berger'], groups:[0,1]}, 
-    2: {course_name:'CS220', professors: ['Marius Minea'], groups:[1,2]},
-    3: {course_name: 'CS383', professors: ['Mathew Rattigan'], groups:[2,1]}
+    0: {course_name: 'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[0,1,2,3]}, 
+    1: {course_name:'CS326', professors: ['Emery Berger'], groups:[4,5,6]}, 
+    2: {course_name:'CS220', professors: ['Marius Minea'], groups:[7,8]},
+    3: {course_name: 'CS383', professors: ['Matthew Rattigan'], groups:[9,10]} //2 groups
 };
 
 let sampleGroups = {
-    0: {created_by: 'Alan', 
-        name: 'Night Grinders1',
+    0: {created_by: 'Alan Castillo', 
+        name: 'Jumpstart 345',
+        meetings_days: ['Teus', 'Wed', 'Thurs'],
+        course_name: 'CS345',
+        prof_name: 'Marco Serafini',
+        max_size: 2,
+        member_ids: [0]
+    },
+    1: {created_by: 'Sam Wallace', 
+        name: '345 Galatica',
+        meetings_days: ['Mon', 'Thurs'],
+        course_name: 'CS345',
+        prof_name: 'Marco Serafini',
+        max_size: 3,
+        member_ids: [1,2]
+    },
+    2: {
+        created_by: 'Alan Castillo', 
+        name: 'StarQL',
+        meetings_days: ['Teus', 'Thurs'],
+        course_name: 'CS345',
+        prof_name: 'Jaime Davila',
+        max_size: 4,
+        member_ids: [0,1,2]
+    },
+    3: {
+        created_by: 'Sam Wallace', 
+        name: 'El DB',
+        meetings_days: ['Teus', 'Wed', 'Thurs'],
+        course_name: 'CS345',
+        prof_name: 'Jaime Davila',
+        max_size: 4,
+        member_ids: [2]
+    },
+    4: {
+        created_by: 'Alan Castillo', 
+        name: 'Web Crawlers',
         meetings_days: ['Teus', 'Wed', 'Thurs'],
         course_name: 'CS326',
         prof_name: 'Emery Berger',
         max_size: 3,
-        member_ids: [0,1,2]
+        member_ids: [0,2]
     },
-    1: {created_by: 'Alan', 
-        name: 'CodeTrek1',
-        meetings_days: ['Teus', 'Wed', 'Thurs'],
+    5: {
+        created_by: 'Alan Castillo', 
+        name: 'Cookie Monster',
+        meetings_days: ['Teus', 'Thurs'],
         course_name: 'CS326',
         prof_name: 'Emery Berger',
-        max_size: 4,
+        max_size: 2,
+        member_ids: [0]
+    },
+    6: {
+        created_by: 'Sam Wallace', 
+        name: 'Node Noobs',
+        meetings_days: ['Teus', 'Wed', 'Thurs', 'Friday'],
+        course_name: 'CS326',
+        prof_name: 'Emery Berger',
+        max_size: 7,
+        member_ids: [1,2]
+    },
+    7: {
+        created_by: 'Sam Wallace', 
+        name: 'Help',
+        meetings_days: ['Teus'],
+        course_name: 'CS220',
+        prof_name: 'Marius Minea',
+        max_size: 3,
+        member_ids: [2]
+    },
+    8: {
+        created_by: 'Alan Castillo', 
+        name: 'Functional Warzone',
+        meetings_days: ['Teus', 'Wed', 'Thurs', 'Friday'],
+        course_name: 'CS220',
+        prof_name: 'Marius Minea',
+        max_size: 9,
         member_ids: [0,1,2]
     },
-    2: {
-        created_by: 'Alan', 
-        name: 'JavaSip1',
-        meetings_days: ['Teus', 'Wed', 'Thurs'],
-        course_name: 'CS326',
-        prof_name: 'Jaime Davila',
-        max_size: 4,
-        member_ids: [0,1,2]
+    9: {
+        created_by: 'Sam Wallace', 
+        name: 'neuralink bots',
+        meetings_days: ['Mon', 'Teus', 'Wed', 'Thurs', 'Friday'],
+        course_name: 'CS383',
+        prof_name: 'Matthew Rattigan',
+        max_size: 5,
+        member_ids: [1,2]
+    },
+    10: {
+        created_by: 'Sam Wallace', 
+        name: '1984',
+        meetings_days: ['Teus', 'Wed', 'Thurs', 'Friday'],
+        course_name: 'CS383',
+        prof_name: 'Matthew Rattigan',
+        max_size: 3,
+        member_ids: [1,2]
     }
 }
-
-// let sampleUsers = {};
-
-// let sampleCourses = {};
-
-// let sampleGroups = {};
 
 const app = express();
 
@@ -76,6 +165,7 @@ function addByID(idx, obj, member, val, res){
     if(idx in obj){
         if(!(val in obj[idx][member]))obj[idx][member].push(val);
         res.status(200).send(obj[idx][member]);
+        
     }else{
         res.status(404).send({err:"Invalid id"});
     }
@@ -120,12 +210,9 @@ app.get('/test', (req,res) =>{
  * Create
  */
 app.post('/user/create', (req, res) => {
-
     req.body.groups = [];
     req.body.courses = [];
     createNewObject(req.body, sampleUsers, res);
-  
-
 });
 
 
@@ -153,7 +240,6 @@ app.post('/user/read/login', (req, res) => {
 app.get('/user/read/id/:user_id', (req, res) => {
     console.log("got to user by user id endpoint");
     readByID(req.params.user_id, sampleUsers, res);
-
 });
 
 
@@ -163,15 +249,13 @@ app.get('/user/read/id/:user_id', (req, res) => {
  */
 
 app.post('/user/update/addGroup', (req, res) => {
-
-    addByID(req.body.user_id, sampleUsers, "groups", req.body.group_id, res);
-  
+    if (!(req.body.group_id in sampleUsers[req.body.user_id]["groups"])){
+        addByID(req.body.user_id, sampleUsers, "groups", req.body.group_id, res);
+    }
 });
 
 app.post('/user/update/addCourse', (req, res) => {
-
     addByID(req.body.user_id, sampleUsers, "courses", req.body.course_id, res);
-  
 });
 
 
