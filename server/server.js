@@ -16,11 +16,11 @@ if (!process.env.PASSWORD) {
 const { MongoClient } = require('mongodb');
 const uri = "mongodb+srv://teams:"+password+"@teamsigma.kd2qp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-client.connect(err => {
+client.connect(async err => {
     const classes = client.db("StudyBuddy").collection("Classes");
     //console.log(classes.s.db);
-    //let a =  classes.find({"course_name": "Web Programming"});
-    //console.log(a);
+    let a =  classes.find({}).toArray();
+    console.log(a);
 
     const groups = client.db("StudyBuddy").collection("Groups");
     const users = client.db("StudyBuddy").collection("Users");
