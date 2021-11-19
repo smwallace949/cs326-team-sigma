@@ -6,6 +6,9 @@ const path = require('path');
 let currUser = -1;
 let secrets;
 let password;
+
+let db = null;
+
 if (!process.env.PASSWORD) {
     secrets = require('../secrets.json');
     password = secrets.password;
@@ -13,134 +16,7 @@ if (!process.env.PASSWORD) {
 	password = process.env.PASSWORD;
 }
 
-const { MongoClient } = require('mongodb');
-const uri = "mongodb+srv://teams:"+password+"@teamsigma.kd2qp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-client.connect(async err => {
-    const classes = client.db("StudyBuddy").collection("Classes");
-    //console.log(classes.s.db);
-    let a =  classes.find({}).toArray();
-    console.log(a);
 
-    const groups = client.db("StudyBuddy").collection("Groups");
-    const users = client.db("StudyBuddy").collection("Users");
-    console.log("We're in!");
-    // perform actions on the collection object
-    client.close();
-});
-
-let sampleUsers = {
-    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", password: "password", linkedIn: 'aacastillo', groups: [0,2,4,5], courses: [0,1,3]},
-    1: {name:'Elisavet Philippakis', password: "password", email: "ephilippakis@umass.edu", groups:[1,2,6,8,9,10]},
-    2: {name:'Sam Wallace', password: "password", email: "swallace@umass.edu", password: "12345", groups:[1,2,3,4,6,7,8,9,10]}
-};
-
-let sampleCourses = {
-    0: {course_name: 'CS345', professors: ['Jaime Davila', 'Marco Serafini'], groups:[0,1,2,3]}, 
-    1: {course_name:'CS326', professors: ['Emery Berger'], groups:[4,5,6]}, 
-    2: {course_name:'CS220', professors: ['Marius Minea'], groups:[7,8]},
-    3: {course_name: 'CS383', professors: ['Matthew Rattigan'], groups:[9,10]} //2 groups
-};
-
-let sampleGroups = {
-    0: {created_by: 'Alan Castillo', 
-        name: 'Jumpstart 345',
-        meetings_days: ['Teus', 'Wed', 'Thurs'],
-        course_name: 'CS345',
-        prof_name: 'Marco Serafini',
-        max_size: 2,
-        member_ids: [0]
-    },
-    1: {created_by: 'Sam Wallace', 
-        name: '345 Galatica',
-        meetings_days: ['Mon', 'Thurs'],
-        course_name: 'CS345',
-        prof_name: 'Marco Serafini',
-        max_size: 3,
-        member_ids: [1,2]
-    },
-    2: {
-        created_by: 'Alan Castillo', 
-        name: 'StarQL',
-        meetings_days: ['Teus', 'Thurs'],
-        course_name: 'CS345',
-        prof_name: 'Jaime Davila',
-        max_size: 4,
-        member_ids: [0,1,2]
-    },
-    3: {
-        created_by: 'Sam Wallace', 
-        name: 'El DB',
-        meetings_days: ['Teus', 'Wed', 'Thurs'],
-        course_name: 'CS345',
-        prof_name: 'Jaime Davila',
-        max_size: 4,
-        member_ids: [2]
-    },
-    4: {
-        created_by: 'Alan Castillo', 
-        name: 'Web Crawlers',
-        meetings_days: ['Teus', 'Wed', 'Thurs'],
-        course_name: 'CS326',
-        prof_name: 'Emery Berger',
-        max_size: 3,
-        member_ids: [0,2]
-    },
-    5: {
-        created_by: 'Alan Castillo', 
-        name: 'Cookie Monster',
-        meetings_days: ['Teus', 'Thurs'],
-        course_name: 'CS326',
-        prof_name: 'Emery Berger',
-        max_size: 2,
-        member_ids: [0]
-    },
-    6: {
-        created_by: 'Sam Wallace', 
-        name: 'Node Noobs',
-        meetings_days: ['Teus', 'Wed', 'Thurs', 'Friday'],
-        course_name: 'CS326',
-        prof_name: 'Emery Berger',
-        max_size: 7,
-        member_ids: [1,2]
-    },
-    7: {
-        created_by: 'Sam Wallace', 
-        name: 'Help',
-        meetings_days: ['Teus'],
-        course_name: 'CS220',
-        prof_name: 'Marius Minea',
-        max_size: 3,
-        member_ids: [2]
-    },
-    8: {
-        created_by: 'Alan Castillo', 
-        name: 'Functional Warzone',
-        meetings_days: ['Teus', 'Wed', 'Thurs', 'Friday'],
-        course_name: 'CS220',
-        prof_name: 'Marius Minea',
-        max_size: 9,
-        member_ids: [0,1,2]
-    },
-    9: {
-        created_by: 'Sam Wallace', 
-        name: 'neuralink bots',
-        meetings_days: ['Mon', 'Teus', 'Wed', 'Thurs', 'Friday'],
-        course_name: 'CS383',
-        prof_name: 'Matthew Rattigan',
-        max_size: 5,
-        member_ids: [1,2]
-    },
-    10: {
-        created_by: 'Sam Wallace', 
-        name: '1984',
-        meetings_days: ['Teus', 'Wed', 'Thurs', 'Friday'],
-        course_name: 'CS383',
-        prof_name: 'Matthew Rattigan',
-        max_size: 3,
-        member_ids: [1,2]
-    }
-}
 
 const app = express();
 
@@ -148,8 +24,34 @@ app.use( '/' , express.static(path.join(__dirname ,'..')));
 
 app.use( '/' , express.static(path.join(__dirname ,'..', '/auth')));
 
-
 app.use(express.json()); // lets you handle JSON input
+
+
+const { MongoClient } = require('mongodb');
+const uri = "mongodb+srv://teams:"+password+"@teamsigma.kd2qp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+client.connect(async err => {
+
+    if(err) throw err;
+
+    db = client.db("StudyBuddy");
+
+    console.log("We're in!");
+
+    const port = process.env.PORT || 3000;
+
+    app.listen(port, () => {
+        console.log(`Example app listening at ${port}`);
+    });
+
+    // perform actions on the collection object
+    //client.close();
+});
+
+
+
+
+
 
 function readByID(idx, data, res){
     idx = parseInt(idx);
@@ -171,15 +73,17 @@ function addByID(idx, obj, member, val, res){
     }
 }
 
-function createNewObject(obj, collection, res){
+async function createNewObject(obj, collection, res){
 
-    let len = Object.keys(collection).length;
+    // let len = Object.keys(collection).length;
 
-    console.log("Saving object at id ", len);
+    // console.log("Saving object at id ", len);
 
-    collection[len] = obj;
+    // collection[len] = obj;
 
-    res.status(200).send(collection);
+    // res.status(200).send(collection);
+
+    res.status(200).send(await collection.insertOne(obj));
 
 }
 
@@ -210,9 +114,9 @@ app.get('/test', (req,res) =>{
  * Create
  */
 app.post('/user/create', (req, res) => {
-    req.body.groups = [];
-    req.body.courses = [];
-    createNewObject(req.body, sampleUsers, res);
+    // req.body.groups = [];
+    // req.body.courses = [];
+    createNewObject(req.body, db.collection("User"), res);
 });
 
 
@@ -303,14 +207,16 @@ app.post('/course/create', (req, res) => {
 */
   
 
-app.get('/course/read/all', (req, res) => {
-  
-    let out = {};
+app.get('/course/read/all', async (req, res) => {
+
+    let out = await db.collection("Classes").find({}).toArray();
+
+    console.log(out);
     
-    Object.keys(sampleCourses).forEach((id) => {
-        out[id] = sampleCourses[id].course_name;
-    });
-    
+    if(out === null){
+        res.status(404).send({err:"Not valid query response"});
+    }
+
     res.status(200).send(out);
 });
 
@@ -407,10 +313,4 @@ app.post('/group/delete', (req, res) => {
 
 app.get('*', (req, res) => {
   res.status(404).send('NO FOOL, BAD COMMAND');
-});
-
-const port = process.env.PORT || 3000
-
-app.listen(port, () => {
-    console.log(`Example app listening at ${port}`);
 });
