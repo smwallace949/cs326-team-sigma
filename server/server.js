@@ -3,10 +3,8 @@ const express = require('express');
 const path = require('path');
 // OR import express from 'express';
 
-let currUser = -1;
 let secrets;
 let password;
-
 let db = null;
 
 if (!process.env.PASSWORD) {
@@ -48,28 +46,42 @@ client.connect(async err => {
     //client.close();
 });
 
+async function readByID(idx, collection, res){
+    // idx = parseInt(idx);
+    // console.log("Reading ID", idx);
+    // if(idx in data){
+    //     res.status(200).send(data[idx]);
+    // }else{
+    //     res.status(404).send({err:"Invalid id"});
+    // }
 
-
-
-
-
-function readByID(idx, data, res){
-    idx = parseInt(idx);
-    console.log("Reading ID", idx);
-    if(idx in data){
-        res.status(200).send(data[idx]);
-    }else{
+    let out = await collection.findOne({"_id": idx});
+    if (out.length === 0) {
         res.status(404).send({err:"Invalid id"});
+    } else {
+        res.status(200).send(out);
     }
 }
 
-function addByID(idx, obj, member, val, res){
-    if(idx in obj){
-        if(!(val in obj[idx][member]))obj[idx][member].push(val);
-        res.status(200).send(obj[idx][member]);
+async function addByID(idx, collection, member, val, pushQuery, res){
+    // if(idx in obj){
+    //     if(!(val in obj[idx][member])) obj[idx][member].push(val);
+    //     res.status(200).send(obj[idx][member]);
         
-    }else{
+    // }else{
+    //     res.status(404).send({err:"Invalid id"});
+    // }
+    let out = await collection.findOne({"_id": idx});
+    if (out === null){
         res.status(404).send({err:"Invalid id"});
+    } else {
+        await collection.findOne({"_id":idx}, async function(err, result) {
+            if (err) throw err;
+            if (!(val in result[member])) {
+                await collection.update({"_id":idx}, pushQuery);
+                res.status(200).send(result[member]);
+            }
+        });
     }
 }
 
@@ -114,36 +126,68 @@ app.get('/test', (req,res) =>{
  * Create
  */
 app.post('/user/create', (req, res) => {
-    // req.body.groups = [];
-    // req.body.courses = [];
+    req.body.groups = [];
+    req.body.courses = [];
     createNewObject(req.body, db.collection("User"), res);
 });
 
-
-
  /*
- * Read
- */
+  * Read
+  */
 
-app.post('/user/read/login', (req, res) => {
+app.get('/user/all', async (req, res) => {
+    let out = await db.collection("Users").find({}).toArray();
 
+    if(out === null){
+        res.status(404).send({err:"Not valid query response"});
+    }
+    
+    for(let id in out){
+        let curObj = out[id];
+        console.log(await db.collection("Users").findOne({"_id":curObj._id}, function(err, result) {
+            if (err) throw err;
+            let member = "groups";
+            console.log(result[member]);
+        }));
+        // let val = 0;
+        // let pushQuery = {$push: {"groups": val}};
+        // await db.collection("Users").updateOne({"_id":curObj._id}, pushQuery);
+
+        // await db.collection("Users").findOne({"_id":curObj._id}, function(err, result) {
+        //     if (err) throw err;
+        //     console.log(curObj._id);
+        //     console.log(result.groups);
+        //   });
+    }
+    res.status(200).send(out);
+});
+
+let curUserID = null;
+let curUserObj = null;
+
+app.post('/user/read/login', async (req, res) => {
     let out = {status:401, body:{err:"Invalid credentials"}};
-
-    for(let id in Object.keys(sampleUsers)){
-
-        if(sampleUsers[id].email === req.body.email && sampleUsers[id].password === req.body.password){
+    let users = await db.collection("Users").find({}).toArray();
+    for(let id in users){
+        let curObj = users[id];
+        if(curObj.email === req.body.email && curObj.password === req.body.password){
             out.status = 200;
-            out.body = {id: sampleUsers[id]};
+            out.body = curObj;
+            curUserID = curObj._id;
+            curUserObj = curObj;
             break;
         }
     }
-
     res.status(out.status).send(out.body);
+});
+
+app.get('/user/read/data', (req, res) => {
+    res.status(400).send({id: curUserID, userObj: curUserObj});
 });
 
 app.get('/user/read/id/:user_id', (req, res) => {
     console.log("got to user by user id endpoint");
-    readByID(req.params.user_id, sampleUsers, res);
+    readByID(req.params.user_id, db.collection("Users"), res);
 });
 
 
@@ -151,30 +195,40 @@ app.get('/user/read/id/:user_id', (req, res) => {
  /*
  * Update
  */
-
 app.post('/user/update/addGroup', (req, res) => {
-    if (!(req.body.group_id in sampleUsers[req.body.user_id]["groups"])){
-        addByID(req.body.user_id, sampleUsers, "groups", req.body.group_id, res);
-    }
+    let pushQuery = {$push: {"groups": req.body.group_id}};
+    addByID(req.body.user_id, db.collection("Users"), "groups", req.body.group_id, pushQuery, res);
 });
 
 app.post('/user/update/addCourse', (req, res) => {
-    addByID(req.body.user_id, sampleUsers, "courses", req.body.course_id, res);
+    let pushQuery = {$push: {"groups": req.body.course_id}};
+    addByID(req.body.user_id, db.collection("Users"), "courses", req.body.course_id, pushQuery, res);
 });
 
-
-app.post('/course/removeCourse', (req, res) => {
-    if(req.body.user_id in sampleUsers){
-        if(req.body.course_id in sampleUsers[req.body.user_id]){
-            sampleUsers[req.body.user_id].courses = sampleUsers[req.body.user_id].courses.filter((id) => id !== req.body.course_id);
-            sampleUsers[req.body.user_id].groups = sampleUsers[req.body.user_id].groups.filter((group_id) => !(group_id in sampleCourses[req.body.course_id].groups));
-        }
-        
-        res.status(200).send(sampleUsers[req.body.use_id]);
-
-    }else{
+app.post('user/course/removeCourse', (req, res) => {
+    let collection = db.collection("Users");
+    let userDocument = await collection.findOne({"_id":req.body.user_id});
+    if (userDocument !== null) {
+        let cid = req.body.course_id;
+        let uid = req.body.user_id;
+        let pullQuery = {$pull:{"courses":uid}}
+        addByID(uid, collection, "courses", cid, pullQuery, res);
+        //traverse through all groups -> if group is part of course, pull it
+        res.status(200).send(userDocument);
+    } else {
         res.status(404).send({err:"user does not exist"});
     }
+    // if(req.body.user_id in sampleUsers){
+    //     if(req.body.course_id in sampleUsers[req.body.user_id]){
+    //         sampleUsers[req.body.user_id].courses = sampleUsers[req.body.user_id].courses.filter((id) => id !== req.body.course_id);
+    //         sampleUsers[req.body.user_id].groups = sampleUsers[req.body.user_id].groups.filter((group_id) => !(group_id in sampleCourses[req.body.course_id].groups));
+    //     }
+        
+    //     res.status(200).send(sampleUsers[req.body.use_id]);
+
+    // }else{
+    //     res.status(404).send({err:"user does not exist"});
+    // }
     
 });
 
