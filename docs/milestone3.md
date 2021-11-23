@@ -6,16 +6,17 @@ Classes document
 	course_name: String,  // Name of the course
 	couse_number: String,  // Course number with department ex. CS326
     professors: Array, // Array of String that are professors teaching the class
-    group_numbers: Array // Array of ObjectId's of groups for a given class
+    group_ids: Array // Array of ObjectId's of groups for a given class
 }
 
 Groups document
 {
 	_id: <ObjectId1>, 
-	created_by: String, // Name of person who created the group
+	created_by: <ObjectId1>, // ID of person who created the group
 	group_name: String, // A given groups name
     meeting_days: Array, // Array of strings containing the days the group can meet
     course_id: <ObjectId1>, // ObjectId of the course the group is studying for
+    professor_name: String // Name of the professor teaching the section of the course you are in
     max_size: Integer, // Maximum size of the group
     user_ids: Array // Array of ObjectIds of the people in the group
 }
