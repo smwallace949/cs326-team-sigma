@@ -25,7 +25,7 @@ app.use( '/' , express.static(path.join(__dirname ,'..', '/auth')));
 app.use(express.json()); // lets you handle JSON input
 
 
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://teams:"+password+"@teamsigma.kd2qp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 client.connect(async err => {
@@ -46,6 +46,7 @@ client.connect(async err => {
     //client.close();
 });
 
+<<<<<<< HEAD
 async function readByID(idx, collection, res){
     // idx = parseInt(idx);
     // console.log("Reading ID", idx);
@@ -57,6 +58,17 @@ async function readByID(idx, collection, res){
 
     let out = await collection.findOne({"_id": idx});
     if (out.length === 0) {
+=======
+
+
+
+
+
+async function readByID(idx, collection, res){
+
+    let out = await collection.findOne({"_id": ObjectId(idx)});
+    if (out === null) {
+>>>>>>> course-database
         res.status(404).send({err:"Invalid id"});
     } else {
         res.status(200).send(out);
@@ -126,8 +138,13 @@ app.get('/test', (req,res) =>{
  * Create
  */
 app.post('/user/create', (req, res) => {
+<<<<<<< HEAD
     req.body.groups = [];
     req.body.courses = [];
+=======
+    //req.body.groups = [];
+    // req.body.courses = [];
+>>>>>>> course-database
     createNewObject(req.body, db.collection("User"), res);
 });
 
@@ -243,9 +260,13 @@ app.post('user/course/removeCourse', (req, res) => {
  * Create
  */
 
-app.post('/course/create', (req, res) => {
+app.post('/course/create', async (req, res) => {
 
-    if(!(req.body.course_name in Object.values(sampleCourses.map((course) => course[course_name])))){
+    // see if course with this ame already exists
+    let dup = await db.collection("Classes").findOne({course_name:req.body.course_name});
+
+    //if not, insert new course object
+    if(dups === null){
         req.body.groups = [];
         createNewObject(req.body, sampleCourses, res);
     }else{
@@ -276,7 +297,7 @@ app.get('/course/read/all', async (req, res) => {
 
 app.get('/course/read/:course_id', (req, res) => {
   
-    readByID(req.params.course_id, sampleCourses, res);
+    readByID(req.params.course_id, db.collection("Classes"), res);
       
 });
 
