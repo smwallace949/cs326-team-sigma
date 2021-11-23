@@ -126,7 +126,7 @@ app.get('/test', (req,res) =>{
 app.post('/user/create', (req, res) => {
     req.body.groups = [];
     req.body.courses = [];
-    createNewObject(req.body, db.collection("User"), res);
+    createNewObject(req.body, db.collection("Users"), res); //missing s in users
 });
 
  /*
@@ -199,11 +199,11 @@ app.post('/user/update/addGroup', (req, res) => {
 });
 
 app.post('/user/update/addCourse', (req, res) => {
-    let pushQuery = {$push: {"groups": req.body.course_id}};
+    let pushQuery = {$push: {"courses": req.body.course_id}}; //should be courses not groups
     addByID(req.body.user_id, db.collection("Users"), "courses", req.body.course_id, pushQuery, res);
 });
 
-app.post('user/course/removeCourse', (req, res) => {
+app.post('user/course/removeCourse', async (req, res) => {
     let collection = db.collection("Users");
     let userDocument = await collection.findOne({"_id":req.body.user_id});
     if (userDocument !== null) {
@@ -296,13 +296,29 @@ app.get('/course/read/:course_id', (req, res) => {
  */
 app.post('/group/create', (req, res) => {
 
-    sampleCourses[req.body.course_id].groups.push(Object.keys(sampleGroups).length);
-    sampleUsers[req.body.created_by].groups.push(Object.keys(sampleGroups).length);
-    req.body.member_ids = [req.body.created_by];
+    // sampleCourses[req.body.course_id].groups.push(Object.keys(sampleGroups).length);
+    // sampleUsers[req.body.created_by].groups.push(Object.keys(sampleGroups).length);
 
-    sampleGroups[Object.keys(sampleGroups).length] = req.body;
+    // req.body.member_ids = [req.body.created_by];
+    // sampleGroups[Object.keys(sampleGroups).length] = req.body;
+    // res.status(200).send(sampleUsers[req.body.created_by].groups);
 
-    res.status(200).send(sampleUsers[req.body.created_by].groups);
+    //IDEAS BELOW - WIP
+
+    /*
+    create a new group
+    get course by course id, cast to ObjectID, add group to course
+    get user by created by id,cast to ObjectID add group to user
+    */
+   
+    req.body.user_ids = [req.body.created_by];
+    let a = createNewObject(req.body, db.collection("Groups"), res);
+
+    let pushQuery_class = {$push: {"groups": a.group_id}};
+    addByID(req.body.course_id, db.collection("Classes"), "groups", a.group_id, pushQuery_class, res);
+
+    let pushQuery_user = {$push: {"groups": a.group_id}};
+    addByID(req.body.created_by, db.collection("Users"), "groups", a.group_id, pushQuery_user, res);
   
 });
   
@@ -313,15 +329,16 @@ app.post('/group/create', (req, res) => {
 */
   
 app.get('/group/read/:group_id', (req, res) => {
+    readByID(req.params.group_id, db.collection("Groups"), res);
 
-    readByID(req.params.group_id, sampleGroups, res);
-      
 });
   
-app.get('/group/search', (req, res) => {
-  
-    let courseGroups = sampleCourses[req.query.course_id].groups;
-    res.status(200).send(courseGroups);
+app.get('/group/search', async (req, res) => {  
+    // let courseGroups = sampleCourses[req.query.course_id].groups;
+    // need to get groups from a requested course
+
+    let out = await db.collection("Groups").find({"course_id":req.body.course_id}).toArray();
+    res.status(200).send(out);
   
 });
   
@@ -333,9 +350,13 @@ app.get('/group/search', (req, res) => {
   
 app.post('/group/update/addUser', (req, res) => {
   
-    addByID(req.body.group_id, sampleGroups, "member_ids", req.body.user_id, res);
+    // addByID(req.body.group_id, sampleGroups, "member_ids", req.body.user_id, res);
+    
+    let pushQuery = {$push: {"user_ids": req.body.user_id}};
+    addByID(req.body.group_id, db.collection("Groups"), "user_ids", req.body.user_id, pushQuery, res);
     
 });
+
 
 
 
@@ -345,25 +366,25 @@ app.post('/group/update/addUser', (req, res) => {
 
 app.post('/group/delete', (req, res) => {
   
-    if(req.body.group_id in sampleGroups){
-        delete sampleGroups[req.body.group_id];
-        for (let user in sampleUsers){
-            console.log("user: "+ user);
-            sampleUsers[user].groups = sampleUsers[user].groups.filter((id) =>{
-                console.log(id !== req.body.group_id);
-                console.log(id);
-                console.log(req.body.group_id);
-                return id !== req.body.group_id;
-            });
-        }
-        for (let course in sampleCourses){
-            sampleCourses[course].groups = sampleCourses[course].groups.filter((id) => id !== req.body.group_id);
-        }
-        console.log(sampleUsers[req.body.user_id].groups);
-        res.status(200).send(sampleUsers[req.body.user_id].groups);
-    }else{
-        res.status(200).send({msg:"group did not exist"});
-    }
+    // if(req.body.group_id in sampleGroups){
+    //     delete sampleGroups[req.body.group_id];
+    //     for (let user in sampleUsers){
+    //         console.log("user: "+ user);
+    //         sampleUsers[user].groups = sampleUsers[user].groups.filter((id) =>{
+    //             console.log(id !== req.body.group_id);
+    //             console.log(id);
+    //             console.log(req.body.group_id);
+    //             return id !== req.body.group_id;
+    //         });
+    //     }
+    //     for (let course in sampleCourses){
+    //         sampleCourses[course].groups = sampleCourses[course].groups.filter((id) => id !== req.body.group_id);
+    //     }
+    //     console.log(sampleUsers[req.body.user_id].groups);
+    //     res.status(200).send(sampleUsers[req.body.user_id].groups);
+    // }else{
+    //     res.status(200).send({msg:"group did not exist"});
+    // }
     
 });
 
