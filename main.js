@@ -153,11 +153,12 @@ if (document.getElementById('login-html') !== null) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body:JSON.stringify({created_by: creator, 
-                    name: gname, 
+                body:JSON.stringify({created_by: creator,
+                    group_name: gname, 
                     meetings_days: availabilityArr, 
                     course_id: class_id, 
-                    prof_name: teacher,
+                    professor: teacher,
+                    user_ids: [creator],
                     max_size: size})
             }).then(res=>res).catch(err => err);
             

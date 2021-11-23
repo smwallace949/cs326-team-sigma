@@ -310,15 +310,18 @@ app.post('/group/create', (req, res) => {
     get course by course id, cast to ObjectID, add group to course
     get user by created by id,cast to ObjectID add group to user
     */
-   
-    req.body.user_ids = [req.body.created_by];
-    let a = createNewObject(req.body, db.collection("Groups"), res);
 
-    let pushQuery_class = {$push: {"groups": a.group_id}};
-    addByID(req.body.course_id, db.collection("Classes"), "groups", a.group_id, pushQuery_class, res);
+    let res_obj = await db.collection("Groups").insertOne(req.body);
+    let group_id = res_obj.insertedID;
 
-    let pushQuery_user = {$push: {"groups": a.group_id}};
-    addByID(req.body.created_by, db.collection("Users"), "groups", a.group_id, pushQuery_user, res);
+    let pushQuery_class = {$push: {"groups": group_id}};
+    await db.collection("Classes").findOne({"_id": ObjectId(req.body.course_id)}, async function(err, result) {
+        if (err) throw err;
+        await db.collection("Classes").update({"_id": ObjectId(req.body.course_id)}, pushQuery_class);
+    });
+
+    let pushQuery_user = {$push: {"groups": group_id}};
+    addByID(req.body.created_by, db.collection("Users"), "groups", group_id, pushQuery_user, res);
   
 });
   
