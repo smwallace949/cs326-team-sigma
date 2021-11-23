@@ -46,19 +46,6 @@ client.connect(async err => {
     //client.close();
 });
 
-<<<<<<< HEAD
-async function readByID(idx, collection, res){
-    // idx = parseInt(idx);
-    // console.log("Reading ID", idx);
-    // if(idx in data){
-    //     res.status(200).send(data[idx]);
-    // }else{
-    //     res.status(404).send({err:"Invalid id"});
-    // }
-
-    let out = await collection.findOne({"_id": idx});
-    if (out.length === 0) {
-=======
 
 
 
@@ -68,7 +55,6 @@ async function readByID(idx, collection, res){
 
     let out = await collection.findOne({"_id": ObjectId(idx)});
     if (out === null) {
->>>>>>> course-database
         res.status(404).send({err:"Invalid id"});
     } else {
         res.status(200).send(out);
@@ -138,13 +124,8 @@ app.get('/test', (req,res) =>{
  * Create
  */
 app.post('/user/create', (req, res) => {
-<<<<<<< HEAD
     req.body.groups = [];
     req.body.courses = [];
-=======
-    //req.body.groups = [];
-    // req.body.courses = [];
->>>>>>> course-database
     createNewObject(req.body, db.collection("User"), res);
 });
 
