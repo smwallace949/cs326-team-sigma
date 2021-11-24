@@ -81,7 +81,7 @@ async function addByID(idx, collection, member, val, pushQuery, res){
                     if (err) throw err;
                     res.status(200).send(result.value[member]);
                 });
-            }else{
+            }else{addGroup
                 res.status(200).send(result[member]);
             }
         });
@@ -200,7 +200,7 @@ app.get('/user/read/id/:user_id', (req, res) => {
  */
 app.post('/user/update/addGroup', (req, res) => {
     let pushQuery = {$push: {"groups": ObjectId(req.body.group_id)}};
-    addByID(req.body.user_id, db.collection("Users"), "groups", ObjectId(req.body.group_id), pushQuery, res);
+    addByID(req.body.user_id, db.collection("Users"), "groups", req.body.group_id, pushQuery, res);
 });
 
 app.post('/user/update/addCourse', (req, res) => {
@@ -209,18 +209,28 @@ app.post('/user/update/addCourse', (req, res) => {
 });
 
 app.post('user/update/removeCourse', async (req, res) => {
-    let collection = db.collection("Users");
-    let userDocument = await collection.findOne({"_id":ObjectId(req.body.user_id)});
-    if (userDocument !== null) {
-        let cid = req.body.course_id;
-        let uid = req.body.user_id;
-        let pullQuery = {$pull:{"courses":uid}}
-        addByID(uid, collection, "courses", ObjectId(cid), pullQuery, res);
-        //traverse through all groups -> if group is part of course, pull it
-        res.status(200).send(userDocument);
-    } else {
-        res.status(404).send({err:"user does not exist"});
-    }
+
+    let pullCourseQuery = {$pull:{"courses":req.body.course_id}};
+    let pullGroupsQuery = {$pull:{"groups":{course_id:ObjectId(req.body.course_id)}}};
+
+
+    //remove group ids
+    await collection.findOneAndUpdate({_id:req.body.user_id},pullGroupsQuery);
+
+    //remove course ids and send modified user object
+    await collection.findOneAndUpdate({_id:req.body.user_id},pullCourseQuery,{returnDocument:"after"}, async(err, result)=>{
+
+        if(err){
+            res.status(404).send(null);
+            throw err;
+        }
+
+        if (result.value === null){
+            res.status(400).send(null);
+        }else{
+            res.status(200).send(result.value);
+        }
+    });
     // if(req.body.user_id in sampleUsers){
     //     if(req.body.course_id in sampleUsers[req.body.user_id]){
     //         sampleUsers[req.body.user_id].courses = sampleUsers[req.body.user_id].courses.filter((id) => id !== req.body.course_id);
@@ -373,7 +383,7 @@ app.post('/group/update/addUser', (req, res) => {
 * Delete
 */
 
-app.post('/group/delete', (req, res) => {
+app.post('/group/delete', async (req, res) => {
   
     // if(req.body.group_id in sampleGroups){
     //     delete sampleGroups[req.body.group_id];
@@ -394,7 +404,41 @@ app.post('/group/delete', (req, res) => {
     // }else{
     //     res.status(200).send({msg:"group did not exist"});
     // }
-    
+
+    let user = await db.collection("Users").findOne({_id:ObjectId(req.body.user_id)});
+    let group = await db.collection("Groups").findOne({_id:ObjectId(req.body.group_id)});
+
+    if (user === null || group === null){
+        if(user === null)console.log("ERROR: undefined user");
+        if (group === null) console.log("ERROR: undefined group");
+
+        res.status(400).send([]);
+        return;
+    }
+
+    let deletedCount = (await db.collection("Groups").deleteMany({_id:ObjectId(req.body.group_id)})).deletedCount;
+
+    console.log("deleted count: " + deletedCount);
+    if (deletedCount > 0){
+
+        const coursePullQuery = {$pull: {"group_ids": ObjectId(req.body.group_id)}};
+        const userPullQuery = {$pull: {"groups": ObjectId(req.body.group_id)}};
+
+        await db.collection("Classes").findOneAndUpdate({_id:ObjectId(group.course_id)}, coursePullQuery);
+
+
+        await db.collection("Users").updateMany({}, userPullQuery, async(err, result) =>{
+            if (result.modifiedCount > 0){
+                console.log("Modified group arrays effectively");
+                user = await db.collection("Users").findOne({_id:ObjectId(req.body.user_id)});
+            }
+            console.log("Modified Count: " + result.modifiedCount);
+        });
+
+    }
+    res.status(200).send(user.groups);
+
+
 });
 
 app.get('*', (req, res) => {
