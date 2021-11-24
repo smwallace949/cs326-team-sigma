@@ -253,7 +253,7 @@ app.post('/course/create', async (req, res) => {
     }else{
         res.status(200).send({msg:"course already exists"});
     }
-  
+   {ackowledge: 10, insertID: askldjflkdsj}
 });
   
   
