@@ -7,8 +7,10 @@ let sampleUsers = {
 let userID = 0;
 let currentUser = sampleUsers[0];
 
-const url = "http://localhost:3000";
-//const url  = "https://shielded-spire-81354.herokuapp.com"
+let url = "http://localhost:3000";
+if (window.location.hostname !== "localhost"){
+    url = "https://shielded-spire-81354.herokuapp.com";
+}
 
 async function fetchDefaultReturn(url, params){
     return await fetch(url, params)

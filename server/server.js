@@ -62,6 +62,10 @@ async function readByID(idx, collection, res){
 }
 
 async function addByID(idx, collection, member, val, pushQuery, res){
+    
+    //BUG when the member is a list of object ids, fuction cannot determine when an id is in the arrary already
+    
+    
     // if(idx in obj){
     //     if(!(val in obj[idx][member])) obj[idx][member].push(val);
     //     res.status(200).send(obj[idx][member]);
@@ -76,12 +80,34 @@ async function addByID(idx, collection, member, val, pushQuery, res){
     } else {
         await collection.findOne({"_id":idx}, async function(err, result) {
             if (err) throw err;
-            if (!(val in result[member])) {
+
+            let objExists = false;
+
+            console.log("adding ID to member");
+
+            console.log(JSON.stringify(result[member]));
+
+            for (let id in result[member]){
+
+                console.log(val.toString());
+                console.log(result[member][id].toString());
+
+                //DOES NOT WORK AT THIS TIME
+                if (val.toString() === result[member][id].toString()){
+                    objExists = true;
+                    console.log("Successfully prevented duplication of IDs!");
+                    break;
+                }
+
+            }
+
+            //if object is already in array
+            if (objExists) {
                 await collection.findOneAndUpdate({"_id":idx}, pushQuery, {returnDocument: "after"}, async (err, result)=>{
                     if (err) throw err;
                     res.status(200).send(result.value[member]);
                 });
-            }else{addGroup
+            }else{
                 res.status(200).send(result[member]);
             }
         });
@@ -200,7 +226,7 @@ app.get('/user/read/id/:user_id', (req, res) => {
  */
 app.post('/user/update/addGroup', (req, res) => {
     let pushQuery = {$push: {"groups": ObjectId(req.body.group_id)}};
-    addByID(req.body.user_id, db.collection("Users"), "groups", req.body.group_id, pushQuery, res);
+    addByID(req.body.user_id, db.collection("Users"), "groups", ObjectId(req.body.group_id), pushQuery, res);
 });
 
 app.post('/user/update/addCourse', (req, res) => {
