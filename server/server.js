@@ -69,6 +69,7 @@ async function addByID(idx, collection, member, val, pushQuery, res){
     // }else{
     //     res.status(404).send({err:"Invalid id"});
     // }
+    idx = ObjectId(idx);
     let out = await collection.findOne({"_id": idx});
     if (out === null){
         res.status(404).send({err:"Invalid id"});
@@ -76,7 +77,11 @@ async function addByID(idx, collection, member, val, pushQuery, res){
         await collection.findOne({"_id":idx}, async function(err, result) {
             if (err) throw err;
             if (!(val in result[member])) {
-                await collection.update({"_id":idx}, pushQuery);
+                await collection.findOneAndUpdate({"_id":idx}, pushQuery, {returnDocument: "after"}, async (err, result)=>{
+                    if (err) throw err;
+                    res.status(200).send(result.value[member]);
+                });
+            }else{
                 res.status(200).send(result[member]);
             }
         });
@@ -194,23 +199,23 @@ app.get('/user/read/id/:user_id', (req, res) => {
  * Update
  */
 app.post('/user/update/addGroup', (req, res) => {
-    let pushQuery = {$push: {"groups": req.body.group_id}};
-    addByID(req.body.user_id, db.collection("Users"), "groups", req.body.group_id, pushQuery, res);
+    let pushQuery = {$push: {"groups": ObjectId(req.body.group_id)}};
+    addByID(req.body.user_id, db.collection("Users"), "groups", ObjectId(req.body.group_id), pushQuery, res);
 });
 
 app.post('/user/update/addCourse', (req, res) => {
-    let pushQuery = {$push: {"courses": req.body.course_id}}; //should be courses not groups
-    addByID(req.body.user_id, db.collection("Users"), "courses", req.body.course_id, pushQuery, res);
+    let pushQuery = {$push: {"courses": ObjectId(req.body.course_id)}}; //should be courses not groups
+    addByID(req.body.user_id, db.collection("Users"), "courses", ObjectId(req.body.course_id), pushQuery, res);
 });
 
-app.post('user/course/removeCourse', async (req, res) => {
+app.post('user/update/removeCourse', async (req, res) => {
     let collection = db.collection("Users");
-    let userDocument = await collection.findOne({"_id":req.body.user_id});
+    let userDocument = await collection.findOne({"_id":ObjectId(req.body.user_id)});
     if (userDocument !== null) {
         let cid = req.body.course_id;
         let uid = req.body.user_id;
         let pullQuery = {$pull:{"courses":uid}}
-        addByID(uid, collection, "courses", cid, pullQuery, res);
+        addByID(uid, collection, "courses", ObjectId(cid), pullQuery, res);
         //traverse through all groups -> if group is part of course, pull it
         res.status(200).send(userDocument);
     } else {
@@ -294,12 +299,12 @@ app.get('/course/read/:course_id', (req, res) => {
  /*
  * Create
  */
-app.post('/group/create', (req, res) => {
+app.post('/group/create', async (req, res) => {
 
     // sampleCourses[req.body.course_id].groups.push(Object.keys(sampleGroups).length);
     // sampleUsers[req.body.created_by].groups.push(Object.keys(sampleGroups).length);
 
-    // req.body.member_ids = [req.body.created_by];
+    req.body.user_ids = [ObjectId(req.body.created_by)];
     // sampleGroups[Object.keys(sampleGroups).length] = req.body;
     // res.status(200).send(sampleUsers[req.body.created_by].groups);
 
@@ -312,8 +317,9 @@ app.post('/group/create', (req, res) => {
     */
 
     let res_obj = await db.collection("Groups").insertOne(req.body);
-    let group_id = res_obj.insertedID;
-
+    let group_id = res_obj.insertedId;
+    console.log("Insertion Response: " + JSON.stringify(res_obj));
+    console.log("Created Group ID: " + group_id);
     let pushQuery_class = {$push: {"groups": group_id}};
     await db.collection("Classes").findOne({"_id": ObjectId(req.body.course_id)}, async function(err, result) {
         if (err) throw err;
@@ -336,11 +342,11 @@ app.get('/group/read/:group_id', (req, res) => {
 
 });
   
-app.get('/group/search', async (req, res) => {  
+app.post('/group/search', async (req, res) => {  
     // let courseGroups = sampleCourses[req.query.course_id].groups;
     // need to get groups from a requested course
 
-    let out = await db.collection("Groups").find({"course_id":req.body.course_id}).toArray();
+    let out = await db.collection("Groups").find(req.body).toArray();
     res.status(200).send(out);
   
 });
@@ -355,8 +361,8 @@ app.post('/group/update/addUser', (req, res) => {
   
     // addByID(req.body.group_id, sampleGroups, "member_ids", req.body.user_id, res);
     
-    let pushQuery = {$push: {"user_ids": req.body.user_id}};
-    addByID(req.body.group_id, db.collection("Groups"), "user_ids", req.body.user_id, pushQuery, res);
+    let pushQuery = {$push: {"user_ids": ObjectId(req.body.user_id)}};
+    addByID(req.body.group_id, db.collection("Groups"), "user_ids", ObjectId(req.body.user_id), pushQuery, res);
     
 });
 
