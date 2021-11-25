@@ -41,5 +41,5 @@ https://shielded-spire-81354.herokuapp.com
 
 Breakdown of labor:
 Alan:
-Elisavet: set up mongobd with collections, create secret file, example document of collections
+Elisavet: Set up MongoDB Cluster with above collections, created secret file, example document of collections, group endpoints to be used with the database
 Sam: Updated endpoints with logic for CRUD operations on the database, more backend logic. Wrote tests for endpoints (servertests.js)
