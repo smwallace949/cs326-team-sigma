@@ -202,16 +202,18 @@ app.post('/user/read/login', async (req, res) => {
         if(curObj.email === req.body.email && curObj.password === req.body.password){
             out.status = 200;
             out.body = curObj;
+
             curUserID = curObj._id;
             curUserObj = curObj;
+
             break;
         }
     }
-    res.status(out.status).send(out.body);
+    res.status(out.status).send(out.body)
 });
 
 app.get('/user/read/data', (req, res) => {
-    res.status(400).send({id: curUserID, userObj: curUserObj});
+    res.status(200).send({"id": curUserID, "userObj": curUserObj});
 });
 
 app.get('/user/read/id/:user_id', (req, res) => {
@@ -285,7 +287,7 @@ app.post('user/update/removeCourse', async (req, res) => {
 app.post('/course/create', async (req, res) => {
 
     // see if course with this ame already exists
-    let dup = await db.collection("Classes").findOne({course_name:req.body.course_name});
+    let dups = await db.collection("Classes").findOne({course_name:req.body.course_name});
 
     //if not, insert new course object
     if(dups === null){
@@ -294,7 +296,7 @@ app.post('/course/create', async (req, res) => {
     }else{
         res.status(200).send({msg:"course already exists"});
     }
-   {ackowledge: 10, insertID: askldjflkdsj}
+   //{ackowledge: 10, insertID: askldjflkdsj}
 });
   
   
@@ -340,7 +342,6 @@ app.post('/group/create', async (req, res) => {
     // sampleCourses[req.body.course_id].groups.push(Object.keys(sampleGroups).length);
     // sampleUsers[req.body.created_by].groups.push(Object.keys(sampleGroups).length);
 
-    req.body.user_ids = [ObjectId(req.body.created_by)];
     // sampleGroups[Object.keys(sampleGroups).length] = req.body;
     // res.status(200).send(sampleUsers[req.body.created_by].groups);
 
@@ -352,19 +353,28 @@ app.post('/group/create', async (req, res) => {
     get user by created by id,cast to ObjectID add group to user
     */
 
+    req.body.created_by = ObjectId(req.body.created_by);
+    req.body.course_id = ObjectId(req.body.course_id);
+
     let res_obj = await db.collection("Groups").insertOne(req.body);
     let group_id = res_obj.insertedId;
+
     console.log("Insertion Response: " + JSON.stringify(res_obj));
     console.log("Created Group ID: " + group_id);
-    let pushQuery_class = {$push: {"groups": group_id}};
+
+    let pushQuery_class = {$push: {"group_ids": group_id}};
     await db.collection("Classes").findOne({"_id": ObjectId(req.body.course_id)}, async function(err, result) {
         if (err) throw err;
         await db.collection("Classes").update({"_id": ObjectId(req.body.course_id)}, pushQuery_class);
     });
 
     let pushQuery_user = {$push: {"groups": group_id}};
-    addByID(req.body.created_by, db.collection("Users"), "groups", group_id, pushQuery_user, res);
-  
+    await db.collection("Users").findOne({"_id": ObjectId(req.body.created_by)}, async function(err, result) {
+        if (err) throw err;
+        await db.collection("Users").update({"_id": ObjectId(req.body.created_by)}, pushQuery_user);
+        let updatedUsers = await db.collection("Users").findOne({"_id": ObjectId(req.body.created_by)});
+        res.status(200).send(updatedUsers.groups);
+    });  
 });
   
   
@@ -442,6 +452,7 @@ app.post('/group/delete', async (req, res) => {
         return;
     }
 
+    //Why are we deleting many here? should each group appear once in Groups?
     let deletedCount = (await db.collection("Groups").deleteMany({_id:ObjectId(req.body.group_id)})).deletedCount;
 
     console.log("deleted count: " + deletedCount);
@@ -452,7 +463,7 @@ app.post('/group/delete', async (req, res) => {
 
         await db.collection("Classes").findOneAndUpdate({_id:ObjectId(group.course_id)}, coursePullQuery);
 
-
+        //Potential bug here? check
         await db.collection("Users").updateMany({}, userPullQuery, async(err, result) =>{
             if (result.modifiedCount > 0){
                 console.log("Modified group arrays effectively");
@@ -463,8 +474,6 @@ app.post('/group/delete', async (req, res) => {
 
     }
     res.status(200).send(user.groups);
-
-
 });
 
 app.get('*', (req, res) => {

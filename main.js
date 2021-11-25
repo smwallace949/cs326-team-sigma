@@ -4,8 +4,8 @@ let sampleUsers = {
     2: {name:'Sam Wallace', email: "swallace@umass.edu", password: "12345", groups:[]}
 };
 
-let userID = 0;
-let currentUser = sampleUsers[0];
+let userID = null;
+let currentUser = null;
 
 let url = "http://localhost:3000";
 if (window.location.hostname !== "localhost"){
@@ -27,13 +27,14 @@ async function fetchDefaultReturn(url, params){
 
 
 //TODO: onload() get user obj from login, render user classes, and user groups.
-window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
     if (document.getElementById('home') !== null){
         //GET user cur user Data
-        console.log(currentUser);
-        console.log(userID);
+        let curUserObj = await fetchDefaultReturn(url+'/user/read/data').then(res=>res).catch(err => err);
+        userID = curUserObj.id;
+        currentUser = curUserObj.userObj;
         renderAccordion(currentUser.groups, "my-groups");
-        renderClassColumn(currentUser.courses);
+        renderClassColumn();
     }
 });
 
@@ -42,6 +43,7 @@ if (document.getElementById('login-html') !== null) {
     document.getElementById('login-submit').addEventListener('click', async () => {
         let email = document.getElementById('email-login').value;
         let passport = document.getElementById('password-login').value;
+
         let curUserObj = await fetchDefaultReturn(url+'/user/read/login', {
             method: 'POST',
             headers: {
@@ -50,9 +52,10 @@ if (document.getElementById('login-html') !== null) {
             body:JSON.stringify({email: email, password:passport})
         }).then(res=>res).catch(err => err);
 
-        if (currentUser !== null){
-            //POST: validated creditials to server variable
-            window.location = '../home.html';
+        if (curUserObj !== undefined) {
+            window.location = './home.html';
+        } else {
+            window.location = './';
         }
     });
 } else {
@@ -76,9 +79,10 @@ if (document.getElementById('login-html') !== null) {
         let courses = await fetchDefaultReturn(url+'/course/read/all').then(res=>res).catch(err => err);
 
         for (let classKey in courses) {
+            let classObj = courses[classKey];
             let opt = document.createElement('option');
             opt.value = classKey.toString();
-            opt.innerHTML = courses[classKey];
+            opt.innerHTML = classObj.course_number;
             selectDropdown.appendChild(opt);
         }
 
@@ -105,10 +109,17 @@ if (document.getElementById('login-html') !== null) {
     //TODO: add-group btn --> render classes dropdown in modal
     document.getElementById('addGroupButton').addEventListener('click', async () => {
         let classDropdown = document.getElementById('class-dropdown');
+        console.log("current user courses");
+        console.log(currentUser.courses);
+
         for (let classKey in currentUser.courses) {
+            let class_id = currentUser.courses[classKey];
+            console.log(class_id);
+
             let opt = document.createElement('option');
-            opt.value = classKey;
-            opt.innerHTML = (await fetchDefaultReturn(url+`/course/read/${classKey}`).then(res=>res).catch(err => err)).course_name;
+            opt.value = class_id;
+
+            opt.innerHTML = (await fetchDefaultReturn(url+`/course/read/${class_id}`).then(res=>res).catch(err => err)).course_number;
             classDropdown.appendChild(opt);
         }
     });
@@ -155,7 +166,8 @@ if (document.getElementById('login-html') !== null) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body:JSON.stringify({created_by: creator,
+                body:JSON.stringify(
+                    {created_by: creator,
                     group_name: gname, 
                     meetings_days: availabilityArr, 
                     course_id: class_id, 
@@ -163,7 +175,11 @@ if (document.getElementById('login-html') !== null) {
                     user_ids: [creator],
                     max_size: size})
             }).then(res=>res).catch(err => err);
-            
+
+            console.log("current user groups: ");
+            console.log(currentUser.groups);
+
+            renderAccordion(currentUser.groups, "my-groups")
             createSuccessAlert(modalBody, "Successfuly added group! Please close the tab.");
         }
     });
@@ -183,8 +199,6 @@ if (document.getElementById('login-html') !== null) {
         }
         renderAccordion(userGroups, "my-groups");
     });
-
-    
 
     //TODO: Delete Modal --> render classes and groups wih values=id
     document.getElementById('delete-btn').addEventListener('click', async() => {
@@ -267,17 +281,22 @@ async function renderClassColumn() {
     newClassBtns.classList.add('class-buttons');
     newClassBtns.setAttribute('id', 'class-column');
 
-    for (let course_id of currentUser.courses) {
+    for (let course_id_idx in currentUser.courses) {
+
+        let course_id = currentUser.courses[course_id_idx];
         let btn = document.createElement('button');
         btn.setAttribute('type', 'button');
         btn.classList.add('btn', 'btn-outline-primary', 'btn-block', 'class-btn');
         btn.setAttribute('value', course_id);
-        btn.innerHTML = courses[course_id];
+
+        btn.innerHTML = (courses.filter(course => course._id === course_id))[0].course_number;
+
         btn.addEventListener('click', async () => {
             //GET: /course/:course_id
             let curCourse = await fetchDefaultReturn(url+`/course/read/${course_id}`).then(res=>res).catch(err => err);
+
             renderFilter(curCourse);
-            renderAccordion(curCourse.groups, "add");
+            renderAccordion(curCourse.group_ids, "add");
         }); 
         newClassBtns.appendChild(btn);
     }
@@ -355,8 +374,6 @@ function renderFilter(curCourseObj) {
                     let minSizeInput = i.value;
                     let maxSizeInput = i2.value;
                     let filteredGroups = [];
-
-            
                     
                     for (let group_id of curCourseObj.groups) {
                         //GET group with group_id
@@ -377,7 +394,6 @@ function renderFilter(curCourseObj) {
 
 async function renderAccordion(groups_t, sector) {
     let contentColumn = document.getElementById('content-column');
-
     let oldAccordion = document.getElementById('my-groups-accordion');
     if (oldAccordion !== null) {
         contentColumn.removeChild(oldAccordion);
@@ -386,6 +402,7 @@ async function renderAccordion(groups_t, sector) {
     let newAccordion = document.createElement('div');
     newAccordion.classList.add("accordion");
     newAccordion.setAttribute('id', 'my-groups-accordion');
+
     for (let groupId of groups_t) {
         if (currentUser.groups.includes(groupId) && sector==="add") {
             continue;
@@ -409,29 +426,35 @@ async function renderAccordion(groups_t, sector) {
             let groupNameSpan = document.createElement('span');
             groupNameSpan.classList.add("col");
             groupNameSpan.classList.add("group-attr");
-            groupNameSpan.innerHTML = curGroup.name;
+            groupNameSpan.innerHTML = curGroup.group_name;
             accrdBtn.appendChild(groupNameSpan);
             
             let courseSpan = document.createElement('span');
             courseSpan.classList.add("col");
             courseSpan.classList.add("group-attr");
-            courseSpan.innerHTML = curGroup.course_name;
+
+            let groupCourse = await fetchDefaultReturn(url +`/course/read/${curGroup.course_id}`)
+            courseSpan.innerHTML = groupCourse.course_number;
+
             accrdBtn.appendChild(courseSpan);
 
             let availabilitySpan = document.createElement('span');
             availabilitySpan.classList.add("col");
             availabilitySpan.classList.add("group-attr");
             let availStr = "";
-            for (let day of curGroup.meetings_days) {
+
+            for (let dayidx in curGroup.meeting_days) {
+                let day = curGroup.meeting_days[dayidx];
                 availStr += (day + " ");
             }
+
             availabilitySpan.innerHTML = availStr;
             accrdBtn.appendChild(availabilitySpan);
 
             let teacherSpan = document.createElement('span');
             teacherSpan.classList.add("col");
             teacherSpan.classList.add("group-attr");
-            teacherSpan.innerHTML = curGroup.prof_name;
+            teacherSpan.innerHTML = curGroup.professor;
             accrdBtn.appendChild(teacherSpan);
 
             let sizeSpan = document.createElement('span');
@@ -451,9 +474,13 @@ async function renderAccordion(groups_t, sector) {
                 strongDiv.innerHTML = "Group Members";
                 titleDiv.appendChild(strongDiv);
                 accrdBodyDiv.appendChild(titleDiv);
-                for (let member_id of curGroup.member_ids) {
+
+                for (let member_id_idx in curGroup.user_ids) {
+                    let member_id = curGroup.user_ids[member_id_idx];
+
                     let tempDiv = document.createElement('div');
-                    let userInfo = sampleUsers[member_id]
+                    let userInfo = await fetchDefaultReturn(url+`/user/read/id/${member_id}`);
+
                     let divStr = userInfo.name;
                     divStr += (" -> " + userInfo.email);
                     tempDiv.innerHTML = divStr;
@@ -513,7 +540,9 @@ function getAvailability() {
     let days = document.getElementsByClassName('availability');
     for (let i=0; i<days.length; i++) {
         if (days[i].checked) {
-            availability.push(days[i].value);
+            let obj = {};
+            obj[i] = days[i].value
+            availability.push(obj);
         }
     }
     return availability;
