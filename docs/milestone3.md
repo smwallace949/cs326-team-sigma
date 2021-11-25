@@ -36,7 +36,10 @@ Users document
     courses: Array // Array of ObjectIds of the courses a user is in
 }
 
+Heroku Deployment URL:
+https://shielded-spire-81354.herokuapp.com
+
 Breakdown of labor:
 Alan:
 Elisavet: set up mongobd with collections, create secret file, example document of collections
-Sam:
+Sam: Updated endpoints with logic for CRUD operations on the database, more backend logic. Wrote tests for endpoints (servertests.js)
