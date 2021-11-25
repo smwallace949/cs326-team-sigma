@@ -67,6 +67,8 @@ async function tests(){
 
     console.log("# of user's groups:\n" + user.groups.length);
 
+    let groupsBeforeCommit = user.groups.length;
+
     user.groups = await fetchDefaultReturn(url + '/group/create', { //CREATE A NEW GROUP
         method: 'POST',
         headers: {
@@ -75,71 +77,79 @@ async function tests(){
         body:JSON.stringify({created_by:user._id, name:"Java Beans", course_id:courseReq._id, min_size: 2, max_size:10})
     }).then(res=>res).catch(err => err);
 
+    let groupsAfterCommit = user.groups.length;
+
     console.log("# of user's groups after creating new one:\n" + user.groups.length);
 
-    let group = await fetchDefaultReturn(url+`/group/read/${user.groups[user.groups.length-1]}`).then(res=>res).catch(err => err);//READ GROUP INFO FROM ID
+    if (groupsAfterCommit > groupsBeforeCommit){
 
-    console.log("Created Group ID:\n" + group._id);
+        let group = await fetchDefaultReturn(url+`/group/read/${user.groups[user.groups.length-1]}`).then(res=>res).catch(err => err);//READ GROUP INFO FROM ID
 
-    let addGroupReq = await fetchDefaultReturn(url+'/user/update/addGroup', {//ADD GROUP TO USER (does nothing)
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body:JSON.stringify({user_id: user._id, group_id:group._id})
-    }).then(res=>res).catch(err => err);
+        console.log("Created Group ID:\n" + group._id);
 
-    console.log(addGroupReq);
+        let addGroupReq = await fetchDefaultReturn(url+'/user/update/addGroup', {//ADD GROUP TO USER (does nothing)
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body:JSON.stringify({user_id: user._id, group_id:group._id})
+        }).then(res=>res).catch(err => err);
 
-    let addMemberReq = await fetchDefaultReturn(url+'/group/update/addUser', { //ADD USER TO GROUP (does nothing)
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body:JSON.stringify({user_id: user._id, group_id:group._id})
-    }).then(res=>res).catch(err => err);
+        console.log(addGroupReq);
 
-    console.log(addMemberReq);
+        let addMemberReq = await fetchDefaultReturn(url+'/group/update/addUser', { //ADD USER TO GROUP (does nothing)
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body:JSON.stringify({user_id: user._id, group_id:group._id})
+        }).then(res=>res).catch(err => err);
 
-
-    let searchGroupReq = await fetchDefaultReturn(url+'/group/search', { //SERCH FOR GROUPS IN COURSE
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body:JSON.stringify({course_id: courseReq._id})
-    }).then(res=>res).catch(err => err);
-
-    console.log(searchGroupReq);
+        console.log(addMemberReq);
 
 
-    let deleteGroupReq = await fetchDefaultReturn(url+'/group/delete', { //DELETE GROUP
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body:JSON.stringify({user_id: user._id, group_id: group._id})
-    }).then(res=>res).catch(err => err);
+        let searchGroupReq = await fetchDefaultReturn(url+'/group/search', { //SERCH FOR GROUPS IN COURSE
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body:JSON.stringify({course_id: courseReq._id})
+        }).then(res=>res).catch(err => err);
 
-    console.log(deleteGroupReq);
-
-
-    // let createCourseReq = await fetchDefaultReturn(url+'/course/create', {
-    //     method: 'POST',
-    //     headers: {
-    //         'Content-Type': 'application/json',
-    //     },
-    //     body:JSON.stringify({course_name:"CS326", professors:["Emery Berger"]})
-    // }).then(res=>res).catch(err => err);
-
-    // console.log(createCourseReq);
+        console.log(searchGroupReq);
 
 
-    findGroupReq = await fetchDefaultReturn(url+`/group/read/${group._id}`).then(res=>res).catch(err => err);
+        let deleteGroupReq = await fetchDefaultReturn(url+'/group/delete', { //DELETE GROUP
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body:JSON.stringify({user_id: user._id, group_id: group._id})
+        }).then(res=>res).catch(err => err);
 
-    console.log(findGroupReq);
+        console.log(deleteGroupReq);
 
-    console.log("This last request should return an error");
+
+        // let createCourseReq = await fetchDefaultReturn(url+'/course/create', {
+        //     method: 'POST',
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     },
+        //     body:JSON.stringify({course_name:"CS326", professors:["Emery Berger"]})
+        // }).then(res=>res).catch(err => err);
+
+        // console.log(createCourseReq);
+
+
+        findGroupReq = await fetchDefaultReturn(url+`/group/read/${group._id}`).then(res=>res).catch(err => err);
+
+        console.log(findGroupReq);
+
+        console.log("This last request should return an error");
+
+    }else{
+        console.log("Error: group not created successfully");
+    }
 
 
 }
