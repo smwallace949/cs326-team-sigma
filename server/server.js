@@ -445,8 +445,8 @@ app.post('/group/delete', async (req, res) => {
     let group = await db.collection("Groups").findOne({_id:ObjectId(req.body.group_id)});
 
     if (user === null || group === null){
-        if(user === null)console.log("ERROR: undefined user");
-        if (group === null) console.log("ERROR: undefined group");
+        if(user === null)console.log("ERROR: undefined user. Passed user ID: " + req.body.user_id);
+        if (group === null) console.log("ERROR: undefined group. Passed group ID: " + req.body.group_id);
 
         res.status(400).send([]);
         return;
@@ -464,13 +464,16 @@ app.post('/group/delete', async (req, res) => {
         await db.collection("Classes").findOneAndUpdate({_id:ObjectId(group.course_id)}, coursePullQuery);
 
         //Potential bug here? check
-        await db.collection("Users").updateMany({}, userPullQuery, async(err, result) =>{
-            if (result.modifiedCount > 0){
-                console.log("Modified group arrays effectively");
-                user = await db.collection("Users").findOne({_id:ObjectId(req.body.user_id)});
-            }
-            console.log("Modified Count: " + result.modifiedCount);
-        });
+        const updateResult = await db.collection("Users").updateMany({}, userPullQuery);
+
+        if (updateResult.modifiedCount > 0){
+            
+            console.log("Modified group arrays effectively");
+
+            user = await db.collection("Users").findOne({_id:ObjectId(req.body.user_id)});
+        }
+
+        console.log("Modified Count: " + updateResult.modifiedCount);
 
     }
     res.status(200).send(user.groups);

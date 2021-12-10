@@ -217,7 +217,7 @@ if (document.getElementById('login-html') !== null) {
             //let curGroup = groups[groupID];
             let opt = document.createElement('option');
             opt.value = groupID;
-            opt.innerHTML = curGroup.name;
+            opt.innerHTML = curGroup.group_name;
             groupdropdown.appendChild(opt);
         }
     });
@@ -252,7 +252,7 @@ if (document.getElementById('login-html') !== null) {
             //POST: /user/removeCourse
         } else if (!delGroupDrop.disabled) {
 
-            let groupID = parseInt(delGroupDrop.value);
+            let groupID = delGroupDrop.value;
 
             let updatedGroups = await fetchDefaultReturn(url+'/group/delete', {
                 method: 'POST',
