@@ -296,7 +296,7 @@ function renderClassColumn() {
             for (let classKey in courses) {
                 let classObj = courses[classKey];
                 let opt = document.createElement('option');
-                opt.value = classKey.toString();
+                opt.value = courses[classKey]._id.toString();
                 opt.innerHTML = classObj.course_number;
                 selectDropdown.appendChild(opt);
             }
@@ -310,17 +310,17 @@ function renderClassColumn() {
     function addClassSaveChanges_EventListener() {
         document.getElementById('save-class').addEventListener('click', async () => {
         let selectedCourseID = document.getElementById('add-class-dropdown').value;
-        //POST /user/addCourse/
-        currentUser.courses = await fetchDefaultReturn(url+'/user/update/addCourse', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body:JSON.stringify({user_id:userID, group_id:selectedCourseID})
-        }).then(res=>res).catch(err => err);
-        //currentUser.courses.push(selectedCourseID);
-        renderClasses();
-});
+            //POST /user/addCourse/
+            currentUser.courses = await fetchDefaultReturn(url+'/user/update/addCourse', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body:JSON.stringify({user_id:userID, group_id:selectedCourseID})
+            }).then(res=>res).catch(err => err);
+            //currentUser.courses.push(selectedCourseID);
+            renderClasses();
+        });
     }
 
 function renderGroupsColumn() {

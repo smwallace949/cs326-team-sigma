@@ -77,7 +77,7 @@ async function addByID(idx, collection, member, val, pushQuery, res){
     idx = ObjectId(idx);
 
     //find correspoding document
-    await collection.findOne({"_id":ObjIdidx}, async function(err, result) {
+    await collection.findOne({"_id":idx}, async function(err, result) {
 
         //if not fetched, throw error and return 400 level status code
         if (err){
