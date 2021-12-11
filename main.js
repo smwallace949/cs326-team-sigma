@@ -102,9 +102,10 @@ function renderAddGroupsModal() {
 
     function addTeacherEventListener() {
         document.getElementById('class-dropdown').addEventListener('click', async () => {
-            let teacherDropdown = document.getElementById('teacher-dropdown');
+            let parentDiv = document.getElementById("addGroup_select-teacher");
+            let teacherDropdown = createDropdown('teacher-dropdown', parentDiv, "Teacher");
+
             let classDropdown = document.getElementById('class-dropdown');
-    
             if (classDropdown.value !== 'Class') {
                 teacherDropdown.disabled = false;
                 //GET class/read/all
@@ -120,6 +121,8 @@ function renderAddGroupsModal() {
             } else {
                 teacherDropdown.disabled = true;
             }
+
+            parentDiv.appendChild(teacherDropdown);
         });
     }
     
@@ -250,6 +253,9 @@ function renderDeleteModal() {
     }
 
     function deleteSaveChanges_EventListener() {
+        let delClassDrop = document.getElementById('delete-class-dropdown');
+        let delGroupDrop = document.getElementById('delete-group-dropdown');
+
         document.getElementById('delete-save').addEventListener('click', async () => {
             let modalBody = document.getElementById('delete-modal-body');
             if (!delClassDrop.disabled && !delGroupDrop) {
@@ -259,7 +265,6 @@ function renderDeleteModal() {
                 let userID = userID;
                 //POST: /user/removeCourse
             } else if (!delGroupDrop.disabled) {
-    
                 let groupID = delGroupDrop.value;
     
                 let updatedGroups = await fetchDefaultReturn(url+'/group/delete', {
