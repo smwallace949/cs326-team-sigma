@@ -113,8 +113,6 @@ async function addByID(idx, collection, member, val, pushQuery, res){
             });
 
         }else{
-            console.log("course object ID array returned by endpoint");
-            console.log(result[member]);
             res.status(200).send(result[member]);
         }
     });
