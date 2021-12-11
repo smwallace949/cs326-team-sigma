@@ -300,7 +300,8 @@ function addLoginEventListener() {
             window.location = './';
         }
     });
-} 
+}
+
 
 async function renderClasses() {
     const classColumn = document.getElementById('my-classes');
