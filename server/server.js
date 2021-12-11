@@ -36,12 +36,10 @@ client.connect(async err => {
 
     db = client.db("StudyBuddy");
 
-    console.log("We're in!");
-
     const port = process.env.PORT || 3000;
 
     app.listen(port, () => {
-        console.log(`Example app listening at ${port}`);
+        console.log(`App listening at ${port}`);
     });
 
 });
@@ -57,7 +55,7 @@ client.connect(async err => {
 */
 async function readByID(idx, collection, res){
 
-    let out = await collection.findOne({"_id": ObjectId(idx)});
+    let out = await collection.findOne({"_id": ObjectId(idx)});    
     if (out === null) {
         res.status(404).send({err:"Invalid id"});
     } else {
@@ -206,7 +204,6 @@ app.get('/user/read/data', (req, res) => {
 
 //get user by id
 app.get('/user/read/id/:user_id', (req, res) => {
-    console.log("got to user by user id endpoint");
     readByID(req.params.user_id, db.collection("Users"), res);
 });
 
@@ -297,8 +294,6 @@ app.post('/course/create', async (req, res) => {
 app.get('/course/read/all', async (req, res) => {
 
     let out = await db.collection("Classes").find({}).toArray();
-
-    console.log(out);
     
     if(out === null){
         res.status(404).send({err:"Not valid query response"});
@@ -375,7 +370,6 @@ app.post('/group/create', async (req, res) => {
 //get group by id
 app.get('/group/read/:group_id', (req, res) => {
     readByID(req.params.group_id, db.collection("Groups"), res);
-
 });
   
   
@@ -435,8 +429,6 @@ app.post('/group/delete', async (req, res) => {
 
         //if more than one user has their member list modififed
         if (updateResult.modifiedCount > 0){
-
-            console.log("Modified group arrays effectively");
 
             //refetch user var to contain updated group list
             user = await db.collection("Users").findOne({_id:ObjectId(req.body.user_id)});

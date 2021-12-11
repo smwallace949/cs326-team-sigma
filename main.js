@@ -66,8 +66,6 @@ function renderAddGroupsModal() {
 
         for (let classKey in currentUser.courses) {
             let class_id = currentUser.courses[classKey];
-            console.log(class_id);
-
             let opt = document.createElement('option');
             opt.value = class_id;
 
@@ -148,7 +146,7 @@ function renderAddGroupsModal() {
                         'Content-Type': 'application/json',
                     },
                     body:JSON.stringify(
-                        {created_by: creator, group_name: gname, meetings_days: availabilityArr, 
+                        {created_by: creator, group_name: gname, meeting_days: availabilityArr, 
                         course_id: class_id, professor: teacher, user_ids: [creator], max_size: size})
                 }).then(res=>res).catch(err => err);
     
@@ -176,11 +174,10 @@ function renderAddGroupsModal() {
     function getAvailability() {
         let availability = [];
         let days = document.getElementsByClassName('availability');
+
         for (let i=0; i<days.length; i++) {
             if (days[i].checked) {
-                let obj = {};
-                obj[i] = days[i].value
-                availability.push(obj);
+                availability.push(days[i].value);
             }
         }
         return availability;
