@@ -202,18 +202,6 @@ function renderAddGroupsModal() {
 
 function renderDeleteModal() {
     document.getElementById('delete-btn').addEventListener('click', async() => {
-        let classParentDiv = document.getElementById("deleteClass_select-class");
-        let classDropdown = createDropdown('delete-class-dropdown', classParentDiv, "Class");
-
-        for (let classKey of currentUser.courses) {
-            let opt = document.createElement('option');
-            opt.value = classKey;
-            opt.innerHTML = (await fetchDefaultReturn(url+`/course/read/${classKey}`).then(res=>res).catch(err => err)).course_name;;
-            classDropdown.appendChild(opt);
-        }
-
-        classParentDiv.appendChild(classDropdown)
-
         let groupParentDiv = document.getElementById("deleteGroup_select-group");
         let groupDropdown = createDropdown('delete-group-dropdown', groupParentDiv, "Group");
 
@@ -228,56 +216,24 @@ function renderDeleteModal() {
 
         groupParentDiv.appendChild(groupDropdown);
     });
-    preventDoubleSelection()
     deleteSaveChanges_EventListener()
 }
 
-    function preventDoubleSelection() {
-        let delClassDrop = document.getElementById('delete-class-dropdown');
-        let delGroupDrop = document.getElementById('delete-group-dropdown');
-
-        delClassDrop.addEventListener('click', () => {
-            if (delClassDrop.value !== 'class') {
-                delGroupDrop.setAttribute('disabled', 'true');
-            } else {
-                delGroupDrop.disabled = false;
-            }
-        });
-        delGroupDrop.addEventListener('click', () => {
-            if (delGroupDrop.value !== 'group') {
-                delClassDrop.setAttribute('disabled', 'true');
-            } else {
-                delClassDrop.disabled = false;
-            }
-        });
-    }
-
     function deleteSaveChanges_EventListener() {
-        let delClassDrop = document.getElementById('delete-class-dropdown');
-        let delGroupDrop = document.getElementById('delete-group-dropdown');
-
         document.getElementById('delete-save').addEventListener('click', async () => {
-            let modalBody = document.getElementById('delete-modal-body');
-            if (!delClassDrop.disabled && !delGroupDrop) {
-                createDangerAlert(modalBody, "You have not selected a group or class");
-            } else if (!delClassDrop.disabled) {
-                let classID = delClassDrop.value;
-                let userID = userID;
-                //POST: /user/removeCourse
-            } else if (!delGroupDrop.disabled) {
-                let groupID = delGroupDrop.value;
-    
+            let delGroupDrop = document.getElementById('delete-group-dropdown');
+            if (delGroupDrop.value !== "Group") {
                 let updatedGroups = await fetchDefaultReturn(url+'/group/delete', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body:JSON.stringify({user_id: userID, group_id:groupID})
+                    body:JSON.stringify({user_id: userID, group_id:delGroupDrop.value})
                 }).then(res=>res).catch(err => err);
+    
                 currentUser.groups = updatedGroups;
                 renderAccordion(updatedGroups, "my-groups");
-                //POST /group/delete
-            }
+            }            
         });
     }
 
@@ -309,18 +265,18 @@ function renderClassColumn() {
 
     function addClassSaveChanges_EventListener() {
         document.getElementById('save-class').addEventListener('click', async () => {
-        let selectedCourseID = document.getElementById('add-class-dropdown').value;
-        //POST /user/addCourse/
-        currentUser.courses = await fetchDefaultReturn(url+'/user/update/addCourse', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body:JSON.stringify({user_id:userID, group_id:selectedCourseID})
-        }).then(res=>res).catch(err => err);
-        //currentUser.courses.push(selectedCourseID);
-        renderClasses();
-});
+            let selectedCourseID = document.getElementById('add-class-dropdown').value;
+            //POST /user/addCourse/
+            currentUser.courses = await fetchDefaultReturn(url+'/user/update/addCourse', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body:JSON.stringify({user_id:userID, group_id:selectedCourseID})
+            }).then(res=>res).catch(err => err);
+            //currentUser.courses.push(selectedCourseID);
+            renderClasses();
+        });
     }
 
 function renderGroupsColumn() {
