@@ -3,10 +3,12 @@ const express = require('express');
 const path = require('path');
 // OR import express from 'express';
 
+//define credential vars
 let secrets;
 let password;
 let db = null;
 
+//set password based on process environment
 if (!process.env.PASSWORD) {
     secrets = require('../secrets.json');
     password = secrets.password;
@@ -15,7 +17,7 @@ if (!process.env.PASSWORD) {
 }
 
 
-
+//init express app
 const app = express();
 
 app.use( '/' , express.static(path.join(__dirname ,'..')));
@@ -24,7 +26,7 @@ app.use( '/' , express.static(path.join(__dirname ,'..', '/auth')));
 
 app.use(express.json()); // lets you handle JSON input
 
-
+//init connection to DB, startup server in callback
 const { MongoClient, ObjectId } = require('mongodb');
 const uri = "mongodb+srv://teams:"+password+"@teamsigma.kd2qp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -42,15 +44,17 @@ client.connect(async err => {
         console.log(`Example app listening at ${port}`);
     });
 
-    // perform actions on the collection object
-    //client.close();
 });
 
 
 
 
 
-
+/*
+*readById(idx: String, collection: MongoClient.Collection, res: HTTPResponse)
+*
+*Given a MongoDB objectId idx (uncasted), read the corresponding document from collection and send it in res
+*/
 async function readByID(idx, collection, res){
 
     let out = await collection.findOne({"_id": ObjectId(idx)});
@@ -61,68 +65,64 @@ async function readByID(idx, collection, res){
     }
 }
 
+
+/*
+*addById(idx: String, collection: MongoClient.Collection, member: String, val: ObjectId, pushQuery: MongoClient.UpdateFlter res: HTTPResponse)
+*
+*Given a MongoDB objectId idx (uncasted), update member in idx with UpdateFilter pushquery and return the updated member in res.
+*/
 async function addByID(idx, collection, member, val, pushQuery, res){
-    
-    //BUG when the member is a list of object ids, fuction cannot determine when an id is in the arrary already
-    
-    
-    // if(idx in obj){
-    //     if(!(val in obj[idx][member])) obj[idx][member].push(val);
-    //     res.status(200).send(obj[idx][member]);
-        
-    // }else{
-    //     res.status(404).send({err:"Invalid id"});
-    // }
+
+    //cast object id string
     idx = ObjectId(idx);
-    let out = await collection.findOne({"_id": idx});
-    if (out === null){
-        res.status(404).send({err:"Invalid id"});
-    } else {
-        await collection.findOne({"_id":idx}, async function(err, result) {
-            if (err) throw err;
 
-            let objExists = false;
+    //find correspoding document
+    await collection.findOne({"_id":ObjIdidx}, async function(err, result) {
 
-            console.log("adding ID to member");
+        //if not fetched, throw error and return 400 level status code
+        if (err){
+            res.status(404).send("Bad Request");
+            throw err;
+        }
 
-            console.log(JSON.stringify(result[member]));
+        if (result === null){
+            res.status(400).send('Invalid object id');
+        }
+        
+        //var for if the id being added to the member array is already there
+        let objExists = false;
+        for (let id in result[member]){
 
-            for (let id in result[member]){
-
-                console.log(val.toString());
-                console.log(result[member][id].toString());
-
-                //DOES NOT WORK AT THIS TIME
-                if (val.toString() === result[member][id].toString()){
-                    objExists = true;
-                    console.log("Successfully prevented duplication of IDs!");
-                    break;
-                }
-
+            if (val.toString() === result[member][id].toString()){
+                objExists = true;
+                console.log("Successfully prevented duplication of IDs!");
+                break;
             }
 
-            //if object is already in array
-            if (objExists) {
-                await collection.findOneAndUpdate({"_id":idx}, pushQuery, {returnDocument: "after"}, async (err, result)=>{
-                    if (err) throw err;
-                    res.status(200).send(result.value[member]);
-                });
-            }else{
-                res.status(200).send(result[member]);
-            }
-        });
-    }
+        }
+
+        //if object is not already in array
+        if (!objExists) {
+
+            console.log(`adding ID ${val} to member ${member} of document ${idx}`);
+
+            //return updated member list
+            await collection.findOneAndUpdate({"_id":idx}, pushQuery, {returnDocument: "after"}, async (err, result)=>{
+                if (err) throw err;
+                res.status(200).send(result.value[member]);
+            });
+
+        }else{
+            res.status(200).send(result[member]);
+        }
+    });
 }
-
+/*
+*createNewObject(obj: Object, collection: MongoClient.Collection, res: HTTPResponse)
+*
+*Given an Object obj, add to collection and send response from DB in res.
+*/
 async function createNewObject(obj, collection, res){
-
-    // let len = Object.keys(collection).length;
-
-    // console.log("Saving object at id ", len);
-
-    // collection[len] = obj;
-
-    // res.status(200).send(collection);
 
     res.status(200).send(await collection.insertOne(obj));
 
@@ -136,10 +136,14 @@ async function createNewObject(obj, collection, res){
  * 
  */
 
+
+//if root of url, go to login screen
 app.get('/', (req,res) => {
     res.sendFile(path.join(__dirname, "../auth/login.html"));
 });
 
+
+//route to test page to run server tests.
 app.get('/test', (req,res) =>{
     res.sendFile(path.join(__dirname, "serverTests.html"));
 });
@@ -155,47 +159,30 @@ app.get('/test', (req,res) =>{
  * Create
  */
 app.post('/user/create', (req, res) => {
+
+    //add group and course member arrays
     req.body.groups = [];
     req.body.courses = [];
-    createNewObject(req.body, db.collection("Users"), res); //missing s in users
+
+    //add to users collection
+    createNewObject(req.body, db.collection("Users"), res);
 });
 
  /*
   * Read
   */
 
-app.get('/user/all', async (req, res) => {
-    let out = await db.collection("Users").find({}).toArray();
-
-    if(out === null){
-        res.status(404).send({err:"Not valid query response"});
-    }
-    
-    for(let id in out){
-        let curObj = out[id];
-        console.log(await db.collection("Users").findOne({"_id":curObj._id}, function(err, result) {
-            if (err) throw err;
-            let member = "groups";
-            console.log(result[member]);
-        }));
-        // let val = 0;
-        // let pushQuery = {$push: {"groups": val}};
-        // await db.collection("Users").updateOne({"_id":curObj._id}, pushQuery);
-
-        // await db.collection("Users").findOne({"_id":curObj._id}, function(err, result) {
-        //     if (err) throw err;
-        //     console.log(curObj._id);
-        //     console.log(result.groups);
-        //   });
-    }
-    res.status(200).send(out);
-});
-
+//gloabl server variables for storing current session user (very hacky lmao)
 let curUserID = null;
 let curUserObj = null;
 
+//get user document based on login info
 app.post('/user/read/login', async (req, res) => {
+
+    //default return val is an invalid login
     let out = {status:401, body:{err:"Invalid credentials"}};
+
+    //collect all users, find on with matching credentials, return in response
     let users = await db.collection("Users").find({}).toArray();
     for(let id in users){
         let curObj = users[id];
@@ -212,10 +199,12 @@ app.post('/user/read/login', async (req, res) => {
     res.status(out.status).send(out.body)
 });
 
+//sends current session user's data to frontend
 app.get('/user/read/data', (req, res) => {
     res.status(200).send({"id": curUserID, "userObj": curUserObj});
 });
 
+//get user by id
 app.get('/user/read/id/:user_id', (req, res) => {
     console.log("got to user by user id endpoint");
     readByID(req.params.user_id, db.collection("Users"), res);
@@ -226,19 +215,28 @@ app.get('/user/read/id/:user_id', (req, res) => {
  /*
  * Update
  */
+
+ //update user's group list with new group id
 app.post('/user/update/addGroup', (req, res) => {
+
     let pushQuery = {$push: {"groups": ObjectId(req.body.group_id)}};
+
     addByID(req.body.user_id, db.collection("Users"), "groups", ObjectId(req.body.group_id), pushQuery, res);
 });
 
+//update user's course list by adding course id
 app.post('/user/update/addCourse', (req, res) => {
     let pushQuery = {$push: {"courses": ObjectId(req.body.course_id)}}; //should be courses not groups
+
     addByID(req.body.user_id, db.collection("Users"), "courses", ObjectId(req.body.course_id), pushQuery, res);
+
 });
 
+//
 app.post('user/update/removeCourse', async (req, res) => {
 
     let pullCourseQuery = {$pull:{"courses":req.body.course_id}};
+
     let pullGroupsQuery = {$pull:{"groups":{course_id:ObjectId(req.body.course_id)}}};
 
 
@@ -259,17 +257,6 @@ app.post('user/update/removeCourse', async (req, res) => {
             res.status(200).send(result.value);
         }
     });
-    // if(req.body.user_id in sampleUsers){
-    //     if(req.body.course_id in sampleUsers[req.body.user_id]){
-    //         sampleUsers[req.body.user_id].courses = sampleUsers[req.body.user_id].courses.filter((id) => id !== req.body.course_id);
-    //         sampleUsers[req.body.user_id].groups = sampleUsers[req.body.user_id].groups.filter((group_id) => !(group_id in sampleCourses[req.body.course_id].groups));
-    //     }
-        
-    //     res.status(200).send(sampleUsers[req.body.use_id]);
-
-    // }else{
-    //     res.status(404).send({err:"user does not exist"});
-    // }
     
 });
 
@@ -284,6 +271,8 @@ app.post('user/update/removeCourse', async (req, res) => {
  * Create
  */
 
+
+ //creates a new course
 app.post('/course/create', async (req, res) => {
 
     // see if course with this ame already exists
@@ -296,7 +285,6 @@ app.post('/course/create', async (req, res) => {
     }else{
         res.status(200).send({msg:"course already exists"});
     }
-   //{ackowledge: 10, insertID: askldjflkdsj}
 });
   
   
@@ -305,7 +293,7 @@ app.post('/course/create', async (req, res) => {
 * Read
 */
   
-
+//retruns all course documents, for when user wants to join a new course.
 app.get('/course/read/all', async (req, res) => {
 
     let out = await db.collection("Classes").find({}).toArray();
@@ -319,6 +307,7 @@ app.get('/course/read/all', async (req, res) => {
     res.status(200).send(out);
 });
 
+//read course by id
 app.get('/course/read/:course_id', (req, res) => {
   
     readByID(req.params.course_id, db.collection("Classes"), res);
@@ -337,15 +326,9 @@ app.get('/course/read/:course_id', (req, res) => {
  /*
  * Create
  */
+
+ //create a new group
 app.post('/group/create', async (req, res) => {
-
-    // sampleCourses[req.body.course_id].groups.push(Object.keys(sampleGroups).length);
-    // sampleUsers[req.body.created_by].groups.push(Object.keys(sampleGroups).length);
-
-    // sampleGroups[Object.keys(sampleGroups).length] = req.body;
-    // res.status(200).send(sampleUsers[req.body.created_by].groups);
-
-    //IDEAS BELOW - WIP
 
     /*
     create a new group
@@ -353,21 +336,27 @@ app.post('/group/create', async (req, res) => {
     get user by created by id,cast to ObjectID add group to user
     */
 
+    //add members to group object related to the databse IDs
     req.body.created_by = ObjectId(req.body.created_by);
     req.body.course_id = ObjectId(req.body.course_id);
 
+    //add group to DB
     let res_obj = await db.collection("Groups").insertOne(req.body);
+
+    //new group's id
     let group_id = res_obj.insertedId;
 
     console.log("Insertion Response: " + JSON.stringify(res_obj));
     console.log("Created Group ID: " + group_id);
 
+    //update class document for which this group is  part of
     let pushQuery_class = {$push: {"group_ids": group_id}};
     await db.collection("Classes").findOne({"_id": ObjectId(req.body.course_id)}, async function(err, result) {
         if (err) throw err;
         await db.collection("Classes").update({"_id": ObjectId(req.body.course_id)}, pushQuery_class);
     });
 
+    //update user document of user that created document
     let pushQuery_user = {$push: {"groups": group_id}};
     await db.collection("Users").findOne({"_id": ObjectId(req.body.created_by)}, async function(err, result) {
         if (err) throw err;
@@ -383,18 +372,10 @@ app.post('/group/create', async (req, res) => {
 * Read
 */
   
+//get group by id
 app.get('/group/read/:group_id', (req, res) => {
     readByID(req.params.group_id, db.collection("Groups"), res);
 
-});
-  
-app.post('/group/search', async (req, res) => {  
-    // let courseGroups = sampleCourses[req.query.course_id].groups;
-    // need to get groups from a requested course
-
-    let out = await db.collection("Groups").find(req.body).toArray();
-    res.status(200).send(out);
-  
 });
   
   
@@ -403,9 +384,9 @@ app.post('/group/search', async (req, res) => {
 * Update
 */
   
+
+//add user to group member list
 app.post('/group/update/addUser', (req, res) => {
-  
-    // addByID(req.body.group_id, sampleGroups, "member_ids", req.body.user_id, res);
     
     let pushQuery = {$push: {"user_ids": ObjectId(req.body.user_id)}};
     addByID(req.body.group_id, db.collection("Groups"), "user_ids", ObjectId(req.body.user_id), pushQuery, res);
@@ -419,31 +400,15 @@ app.post('/group/update/addUser', (req, res) => {
 * Delete
 */
 
-app.post('/group/delete', async (req, res) => {
-  
-    // if(req.body.group_id in sampleGroups){
-    //     delete sampleGroups[req.body.group_id];
-    //     for (let user in sampleUsers){
-    //         console.log("user: "+ user);
-    //         sampleUsers[user].groups = sampleUsers[user].groups.filter((id) =>{
-    //             console.log(id !== req.body.group_id);
-    //             console.log(id);
-    //             console.log(req.body.group_id);
-    //             return id !== req.body.group_id;
-    //         });
-    //     }
-    //     for (let course in sampleCourses){
-    //         sampleCourses[course].groups = sampleCourses[course].groups.filter((id) => id !== req.body.group_id);
-    //     }
-    //     console.log(sampleUsers[req.body.user_id].groups);
-    //     res.status(200).send(sampleUsers[req.body.user_id].groups);
-    // }else{
-    //     res.status(200).send({msg:"group did not exist"});
-    // }
 
+//delete
+app.post('/group/delete', async (req, res) => {
+
+    //get user and group objects for user that is requesting to delete the group
     let user = await db.collection("Users").findOne({_id:ObjectId(req.body.user_id)});
     let group = await db.collection("Groups").findOne({_id:ObjectId(req.body.group_id)});
 
+    //if the user or group does not exist, return an empty updated groups list
     if (user === null || group === null){
         if(user === null)console.log("ERROR: undefined user. Passed user ID: " + req.body.user_id);
         if (group === null) console.log("ERROR: undefined group. Passed group ID: " + req.body.group_id);
@@ -452,30 +417,33 @@ app.post('/group/delete', async (req, res) => {
         return;
     }
 
-    //Why are we deleting many here? should each group appear once in Groups?
+    //delete group, return number of groups deleted to ensure it is more than 0 (delete many for when we had duplicate groups)
     let deletedCount = (await db.collection("Groups").deleteMany({_id:ObjectId(req.body.group_id)})).deletedCount;
 
-    console.log("deleted count: " + deletedCount);
+    //if group is deleted
     if (deletedCount > 0){
 
+        //update ops for course and users that this group was a part of
         const coursePullQuery = {$pull: {"group_ids": ObjectId(req.body.group_id)}};
         const userPullQuery = {$pull: {"groups": ObjectId(req.body.group_id)}};
 
+        //update course
         await db.collection("Classes").findOneAndUpdate({_id:ObjectId(group.course_id)}, coursePullQuery);
 
-        //Potential bug here? check
+        //update users
         const updateResult = await db.collection("Users").updateMany({}, userPullQuery);
 
+        //if more than one user has their member list modififed
         if (updateResult.modifiedCount > 0){
-            
+
             console.log("Modified group arrays effectively");
 
+            //refetch user var to contain updated group list
             user = await db.collection("Users").findOne({_id:ObjectId(req.body.user_id)});
         }
 
-        console.log("Modified Count: " + updateResult.modifiedCount);
-
     }
+    //return updated group list
     res.status(200).send(user.groups);
 });
 
