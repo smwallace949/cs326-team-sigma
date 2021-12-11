@@ -41,11 +41,11 @@
                                   <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body" id='add-group-modal-body'>
-                                    <div class="row">
+                                    <div class="row" >
                                         <div class="col">Select a Class:</div>
-                                        <div class="col dropdown">
+                                        <div class="col dropdown" id="addGroup_select-class">
                                             <select class="form-select" id='class-dropdown' aria-label="Default select example">
-                                                <option value="class">Class</option>
+                                                <option value="Class">Class</option>
                                             </select>
                                         </div>
                                     </div>
@@ -53,7 +53,7 @@
                                         <div class="col">Select a Teacher:</div>
                                         <div class="col dropdown">
                                             <select class="form-select" aria-label="Default select example" id='teacher-dropdown' disabled>
-                                                <option value="teacher">Teacher</option>
+                                                <option value="Teacher">Teacher</option>
                                             </select>
                                         </div>
                                     </div>
@@ -146,17 +146,17 @@
                                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
-                                        <div class="col dropdown">
+                                        <div class="col dropdown" id="deleteClass_select-class">
                                             <select class="form-select" id='delete-class-dropdown' aria-label="Default select example">
-                                                <option value="class">Class</option>
+                                                <option value="Class">Class</option>
                                             </select>
                                         </div>
                                         <div class="row justify-content-center">
                                             OR
                                         </div>
-                                        <div class="col dropdown">
+                                        <div class="col dropdown" id="deleteGroup_select-group">
                                             <select class="form-select" id='delete-group-dropdown' aria-label="Default select example">
-                                                <option value="group">Group</option>
+                                                <option value="Group">Group</option>
                                             </select>
                                         </div>
                                         <div class="modal-footer">
@@ -196,7 +196,7 @@
                             <div class="modal-body" id='delete-modal-body'>
                                 <div class="col dropdown" id="add-class-container">
                                     <select class="form-select" id='add-class-dropdown'>
-                                        <option value="class">Class</option>
+                                        <option value="Class">Class</option>
                                     </select>
                                 </div>                                                 
                             </div>

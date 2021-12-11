@@ -1,16 +1,25 @@
-let sampleUsers = {
-    0: {name:'Alan Castillo', email: "aacastillo@umass.edu", linkedIn: 'aacastillo', groups: [0,2,4,5], courses: [0,1,3]},
-    1: {name:'Elisavet Philippakis', email: "ephilippakis@umass.edu", groups:[]},
-    2: {name:'Sam Wallace', email: "swallace@umass.edu", password: "12345", groups:[]}
-};
-
+//Global Variables
 let userID = null;
 let currentUser = null;
 
+//Product vs. Development URL
 let url = "http://localhost:3000";
 if (window.location.hostname !== "localhost"){
     url = "https://shielded-spire-81354.herokuapp.com";
 }
+
+window.addEventListener('load', async () => {
+    if (document.getElementById('home') !== null){
+        //GET User Data Data
+        let curUserObj = await fetchDefaultReturn(url+'/user/read/data').then(res=>res).catch(err => err);
+        userID = curUserObj.id;
+        currentUser = curUserObj.userObj;
+
+        renderPage();
+    } else if (document.getElementById('login-html') !== null) {
+        addLoginEventListener();
+    }
+});
 
 async function fetchDefaultReturn(url, params){
     return await fetch(url, params)
@@ -25,21 +34,296 @@ async function fetchDefaultReturn(url, params){
     });
 }
 
+function renderPage() {
+   //Render page top down, from left to right
+   renderNavigationBar();
+   renderClassColumn();
+   renderGroupsColumn();
+}
 
-//TODO: onload() get user obj from login, render user classes, and user groups.
-window.addEventListener('load', async () => {
-    if (document.getElementById('home') !== null){
-        //GET user cur user Data
-        let curUserObj = await fetchDefaultReturn(url+'/user/read/data').then(res=>res).catch(err => err);
-        userID = curUserObj.id;
-        currentUser = curUserObj.userObj;
-        renderAccordion(currentUser.groups, "my-groups");
-        renderClassColumn();
+function renderNavigationBar() {
+    renderMyGroupsModal();
+    renderAddGroupsModal();
+    renderDeleteModal();
+}
+
+function renderMyGroupsModal() {
+    //TODO: my-groups btn clicked --> render accordion
+    document.getElementById('my-groups-btn').addEventListener('click', () => {
+        let userGroups = currentUser.groups;
+        let filterBar = document.getElementById('filter');
+        if (filterBar !== null) {
+            document.getElementById('content-column').removeChild(filterBar);
+        }
+        renderAccordion(userGroups, "my-groups");
+    });
+}
+
+function renderAddGroupsModal() {
+    document.getElementById('addGroupButton').addEventListener('click', async () => {
+        let parentDiv = document.getElementById('addGroup_select-class');
+        let classDropdown = createDropdown('class-dropdown', parentDiv, "Class");
+
+        for (let classKey in currentUser.courses) {
+            let class_id = currentUser.courses[classKey];
+            console.log(class_id);
+
+            let opt = document.createElement('option');
+            opt.value = class_id;
+
+            opt.innerHTML = (await fetchDefaultReturn(url+`/course/read/${class_id}`).then(res=>res).catch(err => err)).course_number;
+            classDropdown.appendChild(opt);
+        }
+
+        parentDiv.appendChild(classDropdown);
+
+        addTeacherEventListener();
+        groupSaveChanges_EventListener();
+    });
+}
+
+    function createDropdown(container_id, parent_object, default_value){
+        let dropdown = document.getElementById(container_id);
+        if (dropdown !== null) {
+            parent_object.removeChild(dropdown)
+        }
+
+        let newDropdown = document.createElement('select');
+        newDropdown.classList.add('form-select');
+        newDropdown.setAttribute('id', container_id);
+
+        let opt = document.createElement('option');
+        opt.value = default_value;
+        opt.innerHTML = default_value;
+        newDropdown.appendChild(opt);
+
+        return newDropdown;
     }
-});
 
-if (document.getElementById('login-html') !== null) {
-    //Login credentials 
+    function addTeacherEventListener() {
+        document.getElementById('class-dropdown').addEventListener('click', async () => {
+            let teacherDropdown = document.getElementById('teacher-dropdown');
+            let classDropdown = document.getElementById('class-dropdown');
+    
+            if (classDropdown.value !== 'Class') {
+                teacherDropdown.disabled = false;
+                //GET class/read/all
+                let curCourse = await fetchDefaultReturn(url+`/course/read/${classDropdown.value}`).then(res=>res).catch(err => err);
+                let teacherArr = curCourse.professors;
+                //let teacherArr = classes[classDropdown.value].professors;
+                for (let teacher of teacherArr) {
+                    let opt = document.createElement('option');
+                    opt.value = teacher;
+                    opt.innerHTML = teacher;
+                    teacherDropdown.appendChild(opt);
+                }
+            } else {
+                teacherDropdown.disabled = true;
+            }
+        });
+    }
+    
+    function groupSaveChanges_EventListener() {
+        document.getElementById('saveAddedGroup').addEventListener('click', async () => {
+            let modalBody = document.getElementById('add-group-modal-body');
+            let teacherDropdown = document.getElementById('teacher-dropdown');
+            if (teacherDropdown.disabled) {
+                createDangerAlert(modalBody, "Please pick a class first before adding a group")
+            } else {
+                //TODO: Check whether size is an int and whether name is not empty string
+                let class_id = document.getElementById('class-dropdown').value;
+                let teacher = teacherDropdown.value;
+                let size = document.getElementById('max-size-txt').value;
+                let gname = document.getElementById('group-name').value;
+                let availabilityArr = getAvailability();
+                let creator = userID;
+    
+                //POST: /group/create
+                currentUser.groups = await fetchDefaultReturn(url + '/group/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body:JSON.stringify(
+                        {created_by: creator, group_name: gname, meetings_days: availabilityArr, 
+                        course_id: class_id, professor: teacher, user_ids: [creator], max_size: size})
+                }).then(res=>res).catch(err => err);
+    
+                renderAccordion(currentUser.groups, "my-groups")
+                createSuccessAlert(modalBody, "Successfuly added group! Please close the tab.");
+                
+            }
+        });
+    }
+
+    function createDangerAlert(parent, innerText) {
+        let successAlert = document.getElementById('save-group-success')
+        if (successAlert !== null) {
+            parent.removeChild(successAlert);
+        }
+        let div = document.createElement('div');
+        div.classList.add("row", "modal-row", "alert", "alert-danger");
+        div.setAttribute('role', 'alert');
+        div.setAttribute('id', 'save-group-error');
+        div.innerHTML = innerText;
+        parent.appendChild(div);
+        return div;
+    }
+
+    function getAvailability() {
+        let availability = [];
+        let days = document.getElementsByClassName('availability');
+        for (let i=0; i<days.length; i++) {
+            if (days[i].checked) {
+                let obj = {};
+                obj[i] = days[i].value
+                availability.push(obj);
+            }
+        }
+        return availability;
+    }
+
+    function createSuccessAlert(parent, innerText) {
+        let errorAlert = document.getElementById('save-group-error');
+        if (errorAlert !== null) {
+            parent.removeChild(errorAlert);
+        }
+    
+        let div = document.createElement('div');
+        div.classList.add("row", "modal-row", "alert", "alert-success");
+        div.setAttribute('role', 'alert');
+        div.setAttribute('id', 'save-group-success');
+        div.innerHTML = innerText;
+        parent.appendChild(div);
+    }
+
+function renderDeleteModal() {
+    document.getElementById('delete-btn').addEventListener('click', async() => {
+        let classParentDiv = document.getElementById("deleteClass_select-class");
+        let classDropdown = createDropdown('delete-class-dropdown', classParentDiv, "Class");
+
+        for (let classKey of currentUser.courses) {
+            let opt = document.createElement('option');
+            opt.value = classKey;
+            opt.innerHTML = (await fetchDefaultReturn(url+`/course/read/${classKey}`).then(res=>res).catch(err => err)).course_name;;
+            classDropdown.appendChild(opt);
+        }
+
+        classParentDiv.appendChild(classDropdown)
+
+        let groupParentDiv = document.getElementById("deleteGroup_select-group");
+        let groupDropdown = createDropdown('delete-group-dropdown', groupParentDiv, "Group");
+
+        for (let groupID of currentUser.groups) {
+            //GET group with group_id (nested fetches seems like a bad idea)
+            let curGroup = await fetchDefaultReturn(url+`/group/read/${groupID}`).then(res=>res).catch(err => err);
+            let opt = document.createElement('option');
+            opt.value = groupID;
+            opt.innerHTML = curGroup.group_name;
+            groupDropdown.appendChild(opt);
+        }
+
+        groupParentDiv.appendChild(groupDropdown);
+    });
+    preventDoubleSelection()
+    deleteSaveChanges_EventListener()
+}
+
+    function preventDoubleSelection() {
+        let delClassDrop = document.getElementById('delete-class-dropdown');
+        let delGroupDrop = document.getElementById('delete-group-dropdown');
+
+        delClassDrop.addEventListener('click', () => {
+            if (delClassDrop.value !== 'class') {
+                delGroupDrop.setAttribute('disabled', 'true');
+            } else {
+                delGroupDrop.disabled = false;
+            }
+        });
+        delGroupDrop.addEventListener('click', () => {
+            if (delGroupDrop.value !== 'group') {
+                delClassDrop.setAttribute('disabled', 'true');
+            } else {
+                delClassDrop.disabled = false;
+            }
+        });
+    }
+
+    function deleteSaveChanges_EventListener() {
+        document.getElementById('delete-save').addEventListener('click', async () => {
+            let modalBody = document.getElementById('delete-modal-body');
+            if (!delClassDrop.disabled && !delGroupDrop) {
+                createDangerAlert(modalBody, "You have not selected a group or class");
+            } else if (!delClassDrop.disabled) {
+                let classID = delClassDrop.value;
+                let userID = userID;
+                //POST: /user/removeCourse
+            } else if (!delGroupDrop.disabled) {
+    
+                let groupID = delGroupDrop.value;
+    
+                let updatedGroups = await fetchDefaultReturn(url+'/group/delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body:JSON.stringify({user_id: userID, group_id:groupID})
+                }).then(res=>res).catch(err => err);
+                currentUser.groups = updatedGroups;
+                renderAccordion(updatedGroups, "my-groups");
+                //POST /group/delete
+            }
+        });
+    }
+
+function renderClassColumn() {
+    renderAddClassModal();
+    renderClasses();
+}
+
+    function renderAddClassModal() {
+        document.getElementById('add-class-btn').addEventListener('click', async () => {
+            let addClassContainer = document.getElementById('add-class-container');
+            let selectDropdown = createDropdown('add-class-dropdown', addClassContainer, "Class")
+        
+            let courses = await fetchDefaultReturn(url+'/course/read/all').then(res=>res).catch(err => err);
+        
+            for (let classKey in courses) {
+                let classObj = courses[classKey];
+                let opt = document.createElement('option');
+                opt.value = classKey.toString();
+                opt.innerHTML = classObj.course_number;
+                selectDropdown.appendChild(opt);
+            }
+        
+            addClassContainer.appendChild(selectDropdown);
+        });
+
+        addClassSaveChanges_EventListener();
+    }
+
+    function addClassSaveChanges_EventListener() {
+        document.getElementById('save-class').addEventListener('click', async () => {
+        let selectedCourseID = document.getElementById('add-class-dropdown').value;
+        //POST /user/addCourse/
+        currentUser.courses = await fetchDefaultReturn(url+'/user/update/addCourse', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body:JSON.stringify({user_id:userID, group_id:selectedCourseID})
+        }).then(res=>res).catch(err => err);
+        //currentUser.courses.push(selectedCourseID);
+        renderClasses();
+});
+    }
+
+function renderGroupsColumn() {
+    renderAccordion(currentUser.groups, "my-groups");
+
+}
+
+function addLoginEventListener() {
     document.getElementById('login-submit').addEventListener('click', async () => {
         let email = document.getElementById('email-login').value;
         let passport = document.getElementById('password-login').value;
@@ -58,217 +342,9 @@ if (document.getElementById('login-html') !== null) {
             window.location = './';
         }
     });
-} else {
-    //TODO: add-class btn click --> populate class dropdown
-    document.getElementById('add-class-btn').addEventListener('click', async () => {
-        
-        let addClassContainer = document.getElementById('add-class-container');
-        let dropdown = document.getElementById('add-class-dropdown');
-        if (dropdown !== null){
-            addClassContainer.removeChild(dropdown);
-        }
+} 
 
-        let selectDropdown = document.createElement('select');
-        selectDropdown.classList.add("form-select");
-        selectDropdown.setAttribute("id", 'add-class-dropdown');
-            let optHead = document.createElement('option');
-            optHead.value = "class";
-            optHead.innerHTML = "Classes";
-            selectDropdown.appendChild(optHead);
-
-        let courses = await fetchDefaultReturn(url+'/course/read/all').then(res=>res).catch(err => err);
-
-        for (let classKey in courses) {
-            let classObj = courses[classKey];
-            let opt = document.createElement('option');
-            opt.value = classKey.toString();
-            opt.innerHTML = classObj.course_number;
-            selectDropdown.appendChild(opt);
-        }
-
-        addClassContainer.appendChild(selectDropdown);
-    });
-
-    //TODO: add-class btn --> save changes
-    document.getElementById('save-class').addEventListener('click', async () => {
-        let selectedCourseID = document.getElementById('add-class-dropdown').value;
-        //POST /user/addCourse/
-        currentUser.courses = await fetchDefaultReturn(url+'/user/update/addGroup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body:JSON.stringify({user_id:userID, group_id:selectedCourseID})
-        }).then(res=>res).catch(err => err);
-        //currentUser.courses.push(selectedCourseID);
-        renderClassColumn();
-    });
-
-    
-
-    //TODO: add-group btn --> render classes dropdown in modal
-    document.getElementById('addGroupButton').addEventListener('click', async () => {
-        let classDropdown = document.getElementById('class-dropdown');
-        console.log("current user courses");
-        console.log(currentUser.courses);
-
-        for (let classKey in currentUser.courses) {
-            let class_id = currentUser.courses[classKey];
-            console.log(class_id);
-
-            let opt = document.createElement('option');
-            opt.value = class_id;
-
-            opt.innerHTML = (await fetchDefaultReturn(url+`/course/read/${class_id}`).then(res=>res).catch(err => err)).course_number;
-            classDropdown.appendChild(opt);
-        }
-    });
-
-    //TODO: add-group modal --> class-dropdown --> render teacher-dropdown
-    document.getElementById('class-dropdown').addEventListener('click', async () => {
-        let teacherDropdown = document.getElementById('teacher-dropdown');
-        let classDropdown = document.getElementById('class-dropdown');
-        if (classDropdown.value !== 'class') {
-            teacherDropdown.disabled = false;
-            //GET class/read/all
-            let curCourse = await fetchDefaultReturn(url+`/course/read/${classDropdown.value}`).then(res=>res).catch(err => err);
-            let teacherArr = curCourse.professors;
-            //let teacherArr = classes[classDropdown.value].professors;
-            for (let teacher of teacherArr) {
-                let opt = document.createElement('option');
-                opt.value = teacher;
-                opt.innerHTML = teacher;
-                teacherDropdown.appendChild(opt);
-            }
-        } else {
-            teacherDropdown.disabled = true;
-        }
-    });
-
-    //TODO: add-group modal --> save changes
-    document.getElementById('saveAddedGroup').addEventListener('click', async () => {
-        let modalBody = document.getElementById('add-group-modal-body');
-        let teacherDropdown = document.getElementById('teacher-dropdown');
-        if (teacherDropdown.disabled) {
-            createDangerAlert(modalBody, "Please pick a class first before adding a group")
-        } else {
-            //TODO: Check whether size is an int and whether name is not empty string
-            let class_id = document.getElementById('class-dropdown').value;
-            let teacher = teacherDropdown.value;
-            let size = document.getElementById('max-size-txt').value;
-            let gname = document.getElementById('group-name').value;
-            let availabilityArr = getAvailability();
-            let creator = userID;
-
-            //POST: /group/create
-            currentUser.groups = await fetchDefaultReturn(url + '/group/create', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body:JSON.stringify(
-                    {created_by: creator,
-                    group_name: gname, 
-                    meetings_days: availabilityArr, 
-                    course_id: class_id, 
-                    professor: teacher,
-                    user_ids: [creator],
-                    max_size: size})
-            }).then(res=>res).catch(err => err);
-
-            console.log("current user groups: ");
-            console.log(currentUser.groups);
-
-            renderAccordion(currentUser.groups, "my-groups")
-            createSuccessAlert(modalBody, "Successfuly added group! Please close the tab.");
-        }
-    });
-
-
-    
-    
-
-    
-
-    //TODO: my-groups btn clicked --> render accordion
-    document.getElementById('my-groups-btn').addEventListener('click', () => {
-        let userGroups = currentUser.groups;
-        let filterBar = document.getElementById('filter');
-        if (filterBar !== null) {
-            document.getElementById('content-column').removeChild(filterBar);
-        }
-        renderAccordion(userGroups, "my-groups");
-    });
-
-    //TODO: Delete Modal --> render classes and groups wih values=id
-    document.getElementById('delete-btn').addEventListener('click', async() => {
-        let classDropdown = document.getElementById('delete-class-dropdown');
-        for (let classKey of currentUser.courses) {
-            let opt = document.createElement('option');
-            opt.value = classKey;
-            opt.innerHTML = (await fetchDefaultReturn(url+`/course/read/${classKey}`).then(res=>res).catch(err => err)).course_name;;
-            classDropdown.appendChild(opt);
-        }
-
-        let groupdropdown = document.getElementById('delete-group-dropdown');
-        for (let groupID of currentUser.groups) {
-            //GET group with group_id (nested fetches seems like a bad idea)
-            let curGroup = await fetchDefaultReturn(url+`/group/read/${groupID}`).then(res=>res).catch(err => err);
-            //let curGroup = groups[groupID];
-            let opt = document.createElement('option');
-            opt.value = groupID;
-            opt.innerHTML = curGroup.group_name;
-            groupdropdown.appendChild(opt);
-        }
-    });
-
-    //TODO: Delete Modal --> if class or group selected, block out other option.
-    let delClassDrop = document.getElementById('delete-class-dropdown');
-    let delGroupDrop = document.getElementById('delete-group-dropdown');
-
-    delClassDrop.addEventListener('click', () => {
-        if (delClassDrop.value !== 'class') {
-            delGroupDrop.setAttribute('disabled', 'true');
-        } else {
-            delGroupDrop.disabled = false;
-        }
-    });
-    delGroupDrop.addEventListener('click', () => {
-        if (delGroupDrop.value !== 'group') {
-            delClassDrop.setAttribute('disabled', 'true');
-        } else {
-            delClassDrop.disabled = false;
-        }
-    });
-
-    //TODO: Delete Modal --> Save Changes
-    document.getElementById('delete-save').addEventListener('click', async () => {
-        let modalBody = document.getElementById('delete-modal-body');
-        if (!delClassDrop.disabled && !delGroupDrop) {
-            createDangerAlert(modalBody, "You have not selected a group or class");
-        } else if (!delClassDrop.disabled) {
-            let classID = delClassDrop.value;
-            let userID = userID;
-            //POST: /user/removeCourse
-        } else if (!delGroupDrop.disabled) {
-
-            let groupID = delGroupDrop.value;
-
-            let updatedGroups = await fetchDefaultReturn(url+'/group/delete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body:JSON.stringify({user_id: userID, group_id:groupID})
-            }).then(res=>res).catch(err => err);
-            currentUser.groups = updatedGroups;
-            renderAccordion(updatedGroups, "my-groups");
-            //POST /group/delete
-        }
-    });
-}
-
-async function renderClassColumn() {
+async function renderClasses() {
     let classColumn = document.getElementById('my-classes');
     let classBtns = document.getElementById('class-column');
     if (classBtns !== null) {
@@ -516,51 +592,4 @@ async function renderAccordion(groups_t, sector) {
         newAccordion.appendChild(accrdItem);
     }
     contentColumn.appendChild(newAccordion);
-}
-
-function createSuccessAlert(parent, innerText) {
-    let errorAlert = document.getElementById('save-group-error');
-    if (errorAlert !== null) {
-        parent.removeChild(errorAlert);
-    }
-
-    let div = document.createElement('div');
-    div.classList.add("row");
-    div.classList.add("modal-row");
-    div.classList.add("alert");
-    div.classList.add("alert-success");
-    div.setAttribute('role', 'alert');
-    div.setAttribute('id', 'save-group-success');
-    div.innerHTML = innerText;
-    parent.appendChild(div);
-}
-
-function getAvailability() {
-    let availability = [];
-    let days = document.getElementsByClassName('availability');
-    for (let i=0; i<days.length; i++) {
-        if (days[i].checked) {
-            let obj = {};
-            obj[i] = days[i].value
-            availability.push(obj);
-        }
-    }
-    return availability;
-}
-
-function createDangerAlert(parent, innerText) {
-    let successAlert = document.getElementById('save-group-success')
-    if (successAlert !== null) {
-        parent.removeChild(successAlert);
-    }
-    let div = document.createElement('div');
-    div.classList.add("row");
-    div.classList.add("modal-row");
-    div.classList.add("alert");
-    div.classList.add("alert-danger");
-    div.setAttribute('role', 'alert');
-    div.setAttribute('id', 'save-group-error');
-    div.innerHTML = innerText;
-    parent.appendChild(div);
-    return div;
 }
