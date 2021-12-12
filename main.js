@@ -80,122 +80,122 @@ function renderAddGroupsModal() {
     });
 }
 
-    function createDropdown(container_id, parent_object, default_value){
-        const dropdown = document.getElementById(container_id);
-        if (dropdown !== null) {
-            parent_object.removeChild(dropdown);
-        }
-
-        const newDropdown = document.createElement('select');
-        newDropdown.classList.add('form-select');
-        newDropdown.setAttribute('id', container_id);
-
-        const opt = document.createElement('option');
-        opt.value = default_value;
-        opt.innerHTML = default_value;
-        newDropdown.appendChild(opt);
-
-        return newDropdown;
+function createDropdown(container_id, parent_object, default_value){
+    const dropdown = document.getElementById(container_id);
+    if (dropdown !== null) {
+        parent_object.removeChild(dropdown);
     }
 
-    function addTeacherEventListener() {
-        document.getElementById('class-dropdown').addEventListener('click', async () => {
-            const parentDiv = document.getElementById("addGroup_select-teacher");
-            const teacherDropdown = createDropdown('teacher-dropdown', parentDiv, "Teacher");
+    const newDropdown = document.createElement('select');
+    newDropdown.classList.add('form-select');
+    newDropdown.setAttribute('id', container_id);
 
-            const classDropdown = document.getElementById('class-dropdown');
-            if (classDropdown.value !== 'Class') {
-                teacherDropdown.disabled = false;
-                //GET class/read/all
-                const curCourse = await fetchDefaultReturn(url+`/course/read/${classDropdown.value}`).then(res=>res).catch(err => err);
-                const teacherArr = curCourse.professors;
-                //let teacherArr = classes[classDropdown.value].professors;
-                for (const teacher of teacherArr) {
-                    const opt = document.createElement('option');
-                    opt.value = teacher;
-                    opt.innerHTML = teacher;
-                    teacherDropdown.appendChild(opt);
-                }
-            } else {
-                teacherDropdown.disabled = true;
+    const opt = document.createElement('option');
+    opt.value = default_value;
+    opt.innerHTML = default_value;
+    newDropdown.appendChild(opt);
+
+    return newDropdown;
+}
+
+function addTeacherEventListener() {
+    document.getElementById('class-dropdown').addEventListener('click', async () => {
+        const parentDiv = document.getElementById("addGroup_select-teacher");
+        const teacherDropdown = createDropdown('teacher-dropdown', parentDiv, "Teacher");
+
+        const classDropdown = document.getElementById('class-dropdown');
+        if (classDropdown.value !== 'Class') {
+            teacherDropdown.disabled = false;
+            //GET class/read/all
+            const curCourse = await fetchDefaultReturn(url+`/course/read/${classDropdown.value}`).then(res=>res).catch(err => err);
+            const teacherArr = curCourse.professors;
+            //let teacherArr = classes[classDropdown.value].professors;
+            for (const teacher of teacherArr) {
+                const opt = document.createElement('option');
+                opt.value = teacher;
+                opt.innerHTML = teacher;
+                teacherDropdown.appendChild(opt);
             }
-
-            parentDiv.appendChild(teacherDropdown);
-        });
-    }
-    
-    function groupSaveChanges_EventListener() {
-        document.getElementById('saveAddedGroup').addEventListener('click', async () => {
-            const modalBody = document.getElementById('add-group-modal-body');
-            const teacherDropdown = document.getElementById('teacher-dropdown');
-            if (teacherDropdown.disabled) {
-                createDangerAlert(modalBody, "Please pick a class first before adding a group");
-            } else {
-                //TODO: Check whether size is an int and whether name is not empty string
-                const class_id = document.getElementById('class-dropdown').value;
-                const teacher = teacherDropdown.value;
-                const size = document.getElementById('max-size-txt').value;
-                const gname = document.getElementById('group-name').value;
-                const availabilityArr = getAvailability();
-                const creator = userID;
-    
-                //POST: /group/create
-                currentUser.groups = await fetchDefaultReturn(url + '/group/create', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body:JSON.stringify(
-                        {created_by: creator, group_name: gname, meeting_days: availabilityArr, 
-                        course_id: class_id, professor: teacher, user_ids: [creator], max_size: size})
-                }).then(res=>res).catch(err => err);
-    
-                renderAccordion(currentUser.groups, "my-groups");
-                createSuccessAlert(modalBody, "Successfuly added group! Please close the tab.");
-                
-            }
-        });
-    }
-
-    function createDangerAlert(parent, innerText) {
-        const successAlert = document.getElementById('save-group-success');
-        if (successAlert !== null) {
-            parent.removeChild(successAlert);
+        } else {
+            teacherDropdown.disabled = true;
         }
-        const div = document.createElement('div');
-        div.classList.add("row", "modal-row", "alert", "alert-danger");
-        div.setAttribute('role', 'alert');
-        div.setAttribute('id', 'save-group-error');
-        div.innerHTML = innerText;
-        parent.appendChild(div);
-        return div;
-    }
 
-    function getAvailability() {
-        const availability = [];
-        const days = document.getElementsByClassName('availability');
-
-        for (let i=0; i<days.length; i++) {
-            if (days[i].checked) {
-                availability.push(days[i].value);
-            }
-        }
-        return availability;
-    }
-
-    function createSuccessAlert(parent, innerText) {
-        const errorAlert = document.getElementById('save-group-error');
-        if (errorAlert !== null) {
-            parent.removeChild(errorAlert);
-        }
+        parentDiv.appendChild(teacherDropdown);
+    });
+}
     
-        const div = document.createElement('div');
-        div.classList.add("row", "modal-row", "alert", "alert-success");
-        div.setAttribute('role', 'alert');
-        div.setAttribute('id', 'save-group-success');
-        div.innerHTML = innerText;
-        parent.appendChild(div);
+function groupSaveChanges_EventListener() {
+    document.getElementById('saveAddedGroup').addEventListener('click', async () => {
+        const modalBody = document.getElementById('add-group-modal-body');
+        const teacherDropdown = document.getElementById('teacher-dropdown');
+        if (teacherDropdown.disabled) {
+            createDangerAlert(modalBody, "Please pick a class first before adding a group");
+        } else {
+            //TODO: Check whether size is an int and whether name is not empty string
+            const class_id = document.getElementById('class-dropdown').value;
+            const teacher = teacherDropdown.value;
+            const size = document.getElementById('max-size-txt').value;
+            const gname = document.getElementById('group-name').value;
+            const availabilityArr = getAvailability();
+            const creator = userID;
+
+            //POST: /group/create
+            currentUser.groups = await fetchDefaultReturn(url + '/group/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body:JSON.stringify(
+                    {created_by: creator, group_name: gname, meeting_days: availabilityArr, 
+                    course_id: class_id, professor: teacher, user_ids: [creator], max_size: size})
+            }).then(res=>res).catch(err => err);
+
+            renderAccordion(currentUser.groups, "my-groups");
+            createSuccessAlert(modalBody, "Successfuly added group! Please close the tab.");
+            
+        }
+    });
+}
+
+function createDangerAlert(parent, innerText) {
+    const successAlert = document.getElementById('save-group-success');
+    if (successAlert !== null) {
+        parent.removeChild(successAlert);
     }
+    const div = document.createElement('div');
+    div.classList.add("row", "modal-row", "alert", "alert-danger");
+    div.setAttribute('role', 'alert');
+    div.setAttribute('id', 'save-group-error');
+    div.innerHTML = innerText;
+    parent.appendChild(div);
+    return div;
+}
+
+function getAvailability() {
+    const availability = [];
+    const days = document.getElementsByClassName('availability');
+
+    for (let i=0; i<days.length; i++) {
+        if (days[i].checked) {
+            availability.push(days[i].value);
+        }
+    }
+    return availability;
+}
+
+function createSuccessAlert(parent, innerText) {
+    const errorAlert = document.getElementById('save-group-error');
+    if (errorAlert !== null) {
+        parent.removeChild(errorAlert);
+    }
+
+    const div = document.createElement('div');
+    div.classList.add("row", "modal-row", "alert", "alert-success");
+    div.setAttribute('role', 'alert');
+    div.setAttribute('id', 'save-group-success');
+    div.innerHTML = innerText;
+    parent.appendChild(div);
+}
 
 function renderDeleteModal() {
     document.getElementById('delete-btn').addEventListener('click', async() => {
