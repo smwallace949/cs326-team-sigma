@@ -346,14 +346,14 @@ app.post('/group/create', async (req, res) => {
 
     //update class document for which this group is  part of
     let pushQuery_class = {$push: {"group_ids": group_id}};
-    await db.collection("Classes").findOne({"_id": ObjectId(req.body.course_id)}, async function(err, result) {
+    await db.collection("Classes").findOne({"_id": ObjectId(req.body.course_id)}, async function(err) {
         if (err) throw err;
         await db.collection("Classes").update({"_id": ObjectId(req.body.course_id)}, pushQuery_class);
     });
 
     //update user document of user that created document
     let pushQuery_user = {$push: {"groups": group_id}};
-    await db.collection("Users").findOne({"_id": ObjectId(req.body.created_by)}, async function(err, result) {
+    await db.collection("Users").findOne({"_id": ObjectId(req.body.created_by)}, async function(err) {
         if (err) throw err;
         await db.collection("Users").update({"_id": ObjectId(req.body.created_by)}, pushQuery_user);
         let updatedUsers = await db.collection("Users").findOne({"_id": ObjectId(req.body.created_by)});

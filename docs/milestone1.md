@@ -7,95 +7,95 @@ Below are all of the frames with their respectiv wireframes and html implementat
 
 **Login/Create Account Page (Wireframe)**
 
-![Wireframe](auth.png)
+![Wireframe](pictures/auth.png)
 
 
 
 **Login Page (HTML)**
 
-![Wireframe](login1html.png)
+![Wireframe](pictures/login1html.png)
 
 
 
 
 **Create Account Page 1 (HTML)**
 
-![Wireframe](login2html.png)
+![Wireframe](pictures/login2html.png)
 
 
 
 
 **Create Account Page 2 (HTML)**
 
-![Wireframe](login3html.png)
+![Wireframe](pictures/login3html.png)
 
 
 
 **Home Page/My Groups (Wireframe)**
 
-![Wireframe](home.png)
+![Wireframe](pictures/home.png)
 
 
 
 
 **Home Page/My Groups (HTML)**
 
-![html](homepagehtml.png)
+![html](pictures/homepagehtml.png)
 
 
 
 
 **Join a Group (Wireframe)**
 
-![Wireframe](class.png)
+![Wireframe](pictures/class.png)
 
 
 
 
 **Join a Group (HTML)**
 
-![html](addclasshtml.png)
+![html](pictures/addclasshtml.png)
 
 
 
 
 **Add Class Modal (Wireframe)**
 
-![Wireframe](addclass.png)
+![Wireframe](pictures/addclass.png)
 
 
 
 
 **Add Class Modal (HTML)**
 
-![Wireframe](creategrouphtml.png)
+![Wireframe](pictures/creategrouphtml.png)
 
 
 
 
 **Create Group Modal (Wireframe)**
 
-![Wireframe](creategroup.png)
+![Wireframe](pictures/creategroup.png)
 
 
 
 **Create Group Modal (HTML)**
 
-![Wireframe](creategroupmodalhtml.png)
+![Wireframe](pictures/creategroupmodalhtml.png)
 
 
 
 
 **Delete Group/Class Modal (Wireframe)**
 
-![Wireframe](delete.png)
+![Wireframe](pictures/delete.png)
 
 
 
 
 **Delete Group/Class Modal (HTML)**
 
-![Wireframe](deletehtml.png)
+![Wireframe](pictures/deletehtml.png)
 
 
 **Breakdown of Work**
