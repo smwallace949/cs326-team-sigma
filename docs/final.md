@@ -16,13 +16,76 @@ Elisavet Philippakis
 Sam Wallace
 ### User Interface: A final up-to-date list/table describing your application’s user interface. This should include the name of the UI view and its purpose. You should include a screenshot of each of your UI views. ### 
 
-### APIs: A final up-to-date list/table describing your application’s API ### 
+### APIs, URL Routes/Mappings ### 
+
+Page Endpoints:
+
+* GET: /
+    * Gets login page, entrance to application.
+* GET: /test
+    * Goes to page which tests server endpoints
 
 User Endpoints:
 
-(/user/create): Create a new user given information in request body.
-(/user/read/login): gets entire user object given credentials in request body.
-(/user/)
+* Create
+    * POST: /user/create
+        * req body: all fields above, other than user_id, groups, and classes
+        * used at create account screen
+        * response body: status code only
+* Read
+    * GET: /user/read/login
+        * used at login screen
+        * request body: email and password of user logging in
+        * response body: entire user object with userId
+    * GET: /user/read/id/:user_id
+        * used for retrieving non-current user info
+        * returns user obj
+    * GET: /user/read/data
+        * returns current session user's information.
+* Update
+    * POST: /user/update/addGroup/
+        * req body: user_id and group_id, adding group_id to groups member of user identified by user_id
+        * used when current user joins or creates a group
+    * POST: /user/update/addCourse/
+        * req body: user_id and course_id, adding course_id to groups member of user identified by user_id
+        * used when current user adds a course they are in
+* Delete
+    * None
+
+Course Endpoints
+
+* Create
+    * POST: /course/create/
+        * req body: professors within class not called by user, but used to populate backend with class data info needed by users to make and search for groups
+* Read
+    * GET: /course/read/:course_id
+        * used for getting groups the current user is already a part of
+        * returns all fields of the course with id :course_id
+    * GET:/course/read/all
+        * used to get all the course id's and their name
+* Update
+    * None
+* Delete
+    * None
+
+Group Endpoints
+* Create
+    * POST: /group/create
+        * req body: all fields above, except group_id and member_ids (with the only element being the user_id of the user who created the group)
+        * Adds group to user and class
+        * used when a group is created by a user
+        * response body: status code only
+* Read
+    * GET: /group/read/:group_id
+        * used for getting groups the current user is already a part of
+        * returns all fields of the group with id :group_id
+* Update
+    * POST /group/update/addUser
+        * req body: user_id and group_id of group to add user user_id to.
+        * returns status code only
+* Delete 
+    * POST /group/delete
+        * req body: group_id, user_id. user_id must match created_by field of group group_id, and if so, group group_id is deleted. 
 
 ### Database: A final up-to-date representation of your database including a brief description of each of the entities in your data model and their relationships if any. ### 
 
