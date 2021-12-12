@@ -21,6 +21,8 @@ The main goal of the application is to ease the process of connecting with your 
 __Login__
 ![screenshot](.\pictures\login1html.png)
 This is the first page the user is presented with. The password value is hidden as they type to kee the password secure. They also can create and an account, but this UI is mainly for user authentication.
+![screenshot](.\pictures\createUser.png)
+This UI is for new users to create accounts and get added to the database.
 __User Groups__
 ![screenshot](.\pictures\My_Groups.png)
 When the user first logs in he is presented with all the groups that he is currently in. The purpose of this is so that the user can see which groups he is currently in and so he can also view the group availability and further click on each group to get the group member's contact information.
