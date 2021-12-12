@@ -19,20 +19,30 @@ The main goal of the application is to ease the process of connecting with your 
 ### User Interface: A final up-to-date list/table describing your application’s user interface. This should include the name of the UI view and its purpose. You should include a screenshot of each of your UI views. ### 
 
 __Login__
-![screenshot](.\pictures\login1html.png)
+
+![screenshot](pictures\login1html.png)
 This is the first page the user is presented with. The password value is hidden as they type to kee the password secure. They also can create and an account, but this UI is mainly for user authentication.
-![screenshot](.\pictures\createUser.png)
+
+![screenshot](pictures\createUser.png)
 This UI is for new users to create accounts and get added to the database.
+
 __User Groups__
-![screenshot](.\pictures\My_Groups.png)
+
+![screenshot](pictures\My_Groups.png)
 When the user first logs in he is presented with all the groups that he is currently in. The purpose of this is so that the user can see which groups he is currently in and so he can also view the group availability and further click on each group to get the group member's contact information.
+
 __Add Group__
-![screenshot](.\pictures\Add_Group.png)
+
+![screenshot](pictures\Add_Group.png)
 This UI feature is so that users can create groups for classes, which other users can see and join. They provide context for the group, like what class it is for, what instructor is teaching it, what is the preferred meeting times, and the preferred group size.
+
 __Delete Group__
-![screenshot](.\pictures\deletehtml.png)
+
+![screenshot](pictures\deletehtml.png)
 This feature allows users to delete groups that they currently are in. The purpose of this is to provide a way for users to leave groups that they are currently in.
+
 __Classes__
+
 ![screenshot](.\pictures\addclasshtml.png)
 Users can search for groups in different classes by clicking on the class buttons on the left column. These classes represent the classes that they are currently enrolled in. They can join groups from here and also filter through groups based on prefences through this page.
 
