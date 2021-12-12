@@ -539,6 +539,18 @@ async function renderAccordion(groups_t, sector) {
                                     group_id: groupId, 
                                 })
                             }).then(res=>res).catch(err => err);
+
+                            await fetchDefaultReturn(url + '/group/update/addUser', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body:JSON.stringify({
+                                    user_id: userID, 
+                                    group_id: groupId, 
+                                })
+                            }).then(res=>res).catch(err => err);
+                            
                             renderAccordion(groups_t, "add");
                         });
                     joinButtonContainer.appendChild(joinBtn);

@@ -278,6 +278,7 @@ app.post('/course/create', async (req, res) => {
     //if not, insert new course object
     if(dups === null){
         req.body.groups = [];
+        
         createNewObject(req.body, sampleCourses, res);
     }else{
         res.status(200).send({msg:"course already exists"});
