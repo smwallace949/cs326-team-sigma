@@ -8,7 +8,7 @@
 - Given valid ceredntials, loads the home page.
 - Given invalid credentials, reloads the page.
 
-### ___/100 ###
+### ___/5 ###
 
 ---
 
@@ -17,7 +17,7 @@
 - Given a valid umass email and password, save user information.
 - Redirects to login page after created account, with input credentials as now valid.
 
-### ___/100 ###
+### ___/5 ###
 
 ---
 
@@ -32,7 +32,7 @@
 * Displays all member classes on the side bar
     * When clicked on, leads to "Search for Groups" page for that class.
 
-### ___/100 ###
+### ___/20 ###
 
 ---
 
@@ -42,7 +42,7 @@
 * When clicked on, displays group members and join button.
 * When join button clicked, group is added to list of groups on home page.
 
-### ___/100 ###
+### ___/10 ###
 
 ---
 
@@ -60,7 +60,7 @@
     * Contains dropdowns for classes and groups the user is a part of to possibly delete.
     * If group or class is deleted, it is removed from the home page when "Save Changes" is pressed.
 
-### ___/100 ###
+### ___/15 ###
 
 ---
 
@@ -70,7 +70,6 @@
 * Create
     * Create User
     * Create Group
-    * Create Class
 * Read
     * Read User by login
     * Read User by ID
@@ -84,9 +83,8 @@
     * Update Class by ID
 * Delete
     * Delete Group by ID, Current User ID (User ID must be the one that created group)
-    * Delete Class by ID
 
-### ___/100 ###
+### ___/35 ###
 
 ---
 
@@ -98,7 +96,7 @@
 * setup.md complete, in docs folder.
 
 
-### ___/100 ###
+### ___/10 ###
 
 ---
 
