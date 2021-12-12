@@ -26,5 +26,34 @@
   "homepage": "https://github.com/smwallace949/cs326-team-sigma#readme",
   "engines": {
     "node": "^14.15.x"
-  }
+  },
+  "eslintConfig": {
+    "env": {
+        "browser": true,
+        "es2021": true,
+        "node": true
+    },
+    "extends": "eslint:recommended",
+    "parserOptions": {
+        "ecmaVersion": 12,
+        "sourceType": "module"
+    },
+    "rules": {
+        "consistent-return": "error",
+        "no-var": "error",
+        "eqeqeq": "error",
+        "semi": [
+            "error",
+            "always"
+        ],
+        "curly": [
+            "warn",
+            "all"
+        ],
+        "prefer-const": [
+            "warn",
+            {}
+        ]
+    }
+}
 }
